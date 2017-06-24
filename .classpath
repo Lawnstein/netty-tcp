@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/log/jcl-over-slf4j-1.6.4.jar"/>
+	<classpathentry kind="lib" path="lib/log/logback-access-1.1.7.jar"/>
+	<classpathentry kind="lib" path="lib/log/logback-asseble-1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/log/logback-classic-1.1.7.jar"/>
+	<classpathentry kind="lib" path="lib/log/logback-core-1.1.7.jar"/>
+	<classpathentry kind="lib" path="lib/log/slf4j-api-1.7.20.jar"/>
+	<classpathentry kind="lib" path="lib/log/slf4j-log4j12-1.7.7.jar"/>
+	<classpathentry kind="lib" path="lib/netty/kryo-2.24.0.jar"/>
+	<classpathentry kind="lib" path="lib/netty/minlog-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/netty/netty-all-4.1.12.Final-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/netty/netty-all-4.1.12.Final-sources.jar"/>
+	<classpathentry kind="lib" path="lib/netty/netty-all-4.1.12.Final.jar"/>
+	<classpathentry kind="lib" path="lib/netty/objenesis-2.1.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+	<property name="APPID" value="tcp" />
+	<property name="StdoutLogLevel" value="TRACE" />
+	<property name="RootLogLevel" value="TRACE" />
+	<contextName>${APPID}</contextName>
+
+	<logger name="org.springframework" level="WARN" />
+	<logger name="org.apache" level="WARN" />
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<ImmediateFlush>true</ImmediateFlush>
+			<pattern>[%date{yyyy-MM-dd HH:mm:ss.SSS}][%thread][%-5level][%logger{36}] %msg%n</pattern>
+		</encoder>
+	</appender>
+	<appender name="SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
+		<discriminator>
+			<Key>TRCODE</Key>
+			<DefaultValue>X</DefaultValue>
+		</discriminator>
+		<sift>
+			<appender name="LOG${TRCODE}"
+				class="ch.qos.logback.core.rolling.RollingFileAppender">
+				<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+					<fileNamePattern>log/${APPID}/%d{yyyyMMdd}/${TRCODE}_%i
+					</fileNamePattern>
+					<timeBasedFileNamingAndTriggeringPolicy
+						class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+						<maxFileSize>20MB</maxFileSize>
+					</timeBasedFileNamingAndTriggeringPolicy>
+				</rollingPolicy>
+				<Append>false</Append>
+				<encoder>
+					<ImmediateFlush>true</ImmediateFlush>
+					<pattern>[%date{yyyy-MM-dd HH:mm:ss.SSS}][%thread][%-5level][%logger{36}] %msg%n</pattern>
+				</encoder>
+			</appender>
+		</sift>
+	</appender>
+	<appender name="STDERR"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<discriminator>
+			<Key>TRCODE</Key>
+			<DefaultValue>X</DefaultValue>
+		</discriminator>
+		<encoder>
+			<ImmediateFlush>true</ImmediateFlush>
+			<pattern>[%date{yyyy-MM-dd HH:mm:ss.SSS}][%thread][%X{TRCODE}][%-5level][%logger{36}] %msg%n</pattern>
+		</encoder>
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>ERROR</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>log/${APPID}/%d{yyyyMMdd}/ERROR_%i</fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>20MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+	</appender>
+
+	<root level="${RootLogLevel}">
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="STDERR" />
+		<appender-ref ref="SIFT" />
+	</root>
+
+</configuration>

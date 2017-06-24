@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="project" default="default">
+	<property name="build.dir" value="target" />
+	<property name="build.tmp" value="${build.dir}/tmp" />
+	<property name="target.dir" value="lib/netty" />
+	<property name="target.file" value="netty-tcp-client-4.0.0.jar" />
+
+	<target name="default" depends="depends">
+		<copyClass />
+		
+		<antcall target="package" />
+		<echo message="copy ${target.file} to ${target.dir} ..." />
+		<copy todir="${target.dir}" file="${build.dir}/${target.file}" />
+		<antcall target="clean" />
+	</target>
+
+	<macrodef name="copyClass">
+		<sequential>
+			<copy todir="${build.tmp}" overwrite="true">
+				<fileset dir="bin">
+					<include name="io/netty/tcp/client/**" />
+					<include name="io/netty/tcp/message/**" />
+					<include name="io/netty/tcp/serialiaztion/**" />
+					<include name="io/netty/tcp/util/**" />
+					<exclude name="testor/**.**" />
+					<exclude name="logback*.xml" />
+				</fileset>
+			</copy>
+		</sequential>
+	</macrodef>
+	<target name="package">
+		<echo message="package" />
+		<jar jarfile="${build.dir}/${target.file}" compress="true" index="false">
+			<fileset dir="${build.tmp}">
+				<include name="**/**" />
+			</fileset>
+		</jar>
+		<echo message="package complete : ${build.dir}/${target.file}">
+		</echo>
+	</target>
+
+	<target name="clean">
+		<echo message="cleanup ..." />
+		<delete dir="${build.dir}" />
+	</target>
+	<target name="init">
+		<echo message="initialize ..." />
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.tmp}" />
+	</target>
+	<target name="depends">
+		<antcall target="clean" />
+		<antcall target="init" />
+	</target>
+</project>
