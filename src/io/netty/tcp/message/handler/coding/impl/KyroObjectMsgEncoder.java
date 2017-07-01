@@ -9,10 +9,9 @@ package io.netty.tcp.message.handler.coding.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import io.netty.tcp.message.HeadLengthType;
 import io.netty.tcp.message.handler.coding.AbstractFixedLengthHeaderByteMsgEncoder;
-import io.netty.tcp.serialiaztion.JDKObjectSerializer;
+import io.netty.tcp.serialiaztion.KryoObjectSerializer;
 
 /**
  * Kyro编码发送.
@@ -30,7 +29,7 @@ public class KyroObjectMsgEncoder extends AbstractFixedLengthHeaderByteMsgEncode
 
 	@Override
 	public byte[] encoding(Object source) {
-		return JDKObjectSerializer.serializing(source);
+		return KryoObjectSerializer.serializing(source);
 	}
 
 	@Override
