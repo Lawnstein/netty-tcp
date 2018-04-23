@@ -1,2 +1,2 @@
 # netty-tcp
-the tcp connection util based on netty 4
+the netty extension, for tcp-communication.
