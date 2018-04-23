@@ -9,7 +9,7 @@
 	<description>netty extended tcp-communication</description>
 
 	<properties>
-		<java.version>1.8</java.version>
+		<java.version>1.7</java.version>
 		<file.encoding>UTF-8</file.encoding>
 		<project.build.sourceEncoding>${file.encoding}</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>${file.encoding}</project.reporting.outputEncoding>
