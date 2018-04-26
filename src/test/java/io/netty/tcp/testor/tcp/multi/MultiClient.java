@@ -12,7 +12,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.tcp.netty.client.NTcpClient;
+import io.netty.tcp.client.NTcpClient;
 
 /**
  * TODO 请填写注释.

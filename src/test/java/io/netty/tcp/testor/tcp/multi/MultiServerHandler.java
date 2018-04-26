@@ -9,7 +9,7 @@ package io.netty.tcp.testor.tcp.multi;
 import java.util.Map;
 
 import io.netty.channel.Channel;
-import io.netty.tcp.netty.server.ServiceAppHandler;
+import io.netty.tcp.server.ServiceAppHandler;
 
 /**
  * .

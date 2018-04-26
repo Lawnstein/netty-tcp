@@ -6,7 +6,7 @@
  */
 package io.netty.tcp.testor.tcp.multi;
 
-import io.netty.tcp.netty.server.TcpServer;
+import io.netty.tcp.server.TcpServer;
 
 /**
  * TODO 请填写注释.

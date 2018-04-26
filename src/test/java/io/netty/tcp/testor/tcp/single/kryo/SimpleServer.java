@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import io.netty.tcp.netty.server.TcpServer;
+import io.netty.tcp.server.TcpServer;
 
 /**
  * @author Lawnstein.Chan

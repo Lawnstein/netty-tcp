@@ -17,8 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import io.netty.tcp.netty.client.TcpClient;
-import io.netty.tcp.netty.message.HeadLengthType;
+import io.netty.tcp.client.TcpClient;
+import io.netty.tcp.message.HeadLengthType;
 import io.netty.tcp.serialiaztion.JDKObjectSerializer;
 
 /**

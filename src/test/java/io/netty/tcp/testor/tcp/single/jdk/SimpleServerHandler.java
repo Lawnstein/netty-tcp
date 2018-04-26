@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.channel.Channel;
-import io.netty.tcp.netty.server.ServiceAppHandler;
+import io.netty.tcp.server.ServiceAppHandler;
 
 /**
  * @author Lawnstein.Chan

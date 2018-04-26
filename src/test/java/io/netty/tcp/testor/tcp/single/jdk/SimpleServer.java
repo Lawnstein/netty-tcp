@@ -10,9 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import io.netty.tcp.netty.message.handler.coding.impl.JDKObjectMsgDecoder;
-import io.netty.tcp.netty.message.handler.coding.impl.JDKObjectMsgEncoder;
-import io.netty.tcp.netty.server.TcpServer;
+import io.netty.tcp.message.handler.coding.impl.JDKObjectMsgDecoder;
+import io.netty.tcp.message.handler.coding.impl.JDKObjectMsgEncoder;
+import io.netty.tcp.server.TcpServer;
 
 /**
  * @author Lawnstein.Chan
