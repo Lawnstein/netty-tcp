@@ -161,11 +161,11 @@ public class TcpClient extends AbstractClient {
 		 */
 		try {
 			byte[] le = new byte[this.headLengthSize];
-			int r = ClientSocket.read(sock, le, 0, headLengthSize, readTimeout);
+			int r = ClientSocket.read(sock, le, 0, headLengthSize, readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
 			int isz = this.headLengthType.toLength(le);
 			logger.trace("recv response from {} expected size {}({})", rhost, isz, r);
 			byte[] ds = new byte[isz];
-			r = ClientSocket.read(sock, ds, 0, isz, readTimeout);
+			r = ClientSocket.read(sock, ds, 0, isz, readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
 			logger.trace("recv response from {} over. Serialized response size {}({})", rhost, isz, r);
 			if (this.objectSerializable != null)
 				response = objectSerializable.deserialize(ds);
@@ -236,11 +236,11 @@ public class TcpClient extends AbstractClient {
 		Object response = null;
 		try {
 			byte[] le = new byte[this.headLengthSize];
-			int r = ClientSocket.read(sock, le, 0, headLengthSize, readTimeout);
+			int r = ClientSocket.read(sock, le, 0, headLengthSize, readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
 			int isz = this.headLengthType.toLength(le);
 			logger.trace("recv response from {} expected size {}({})", rhost, isz, r);
 			byte[] ds = new byte[isz];
-			r = ClientSocket.read(sock, ds, 0, isz, readTimeout);
+			r = ClientSocket.read(sock, ds, 0, isz, readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
 			logger.trace("recv response from {} over. Serialized response size {}({})", rhost, isz, r);
 			if (this.objectSerializable != null)
 				response = objectSerializable.deserialize(ds);

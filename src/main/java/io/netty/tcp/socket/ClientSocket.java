@@ -46,7 +46,7 @@ public class ClientSocket {
 				socket.shutdownInput();
 				socket.close();
 			} catch (IOException e) {
-				logger.error("close socket " + socket + " IOException " + e);
+				logger.error("close socket {} IOException ", socket, e);
 			}
 		}
 	}
@@ -149,7 +149,7 @@ public class ClientSocket {
 			int available = 0;
 			int rsize = 0;
 			int leftsize = size;
-			int leftime = (timeout < 0 ? 10 : timeout) * 1000;
+			int leftime = (timeout <= 0 ? 10 : timeout) * 1000;
 			InputStream ins = connect.getInputStream();
 			while (leftime > 0) {
 				if ((available = ins.available()) > 0) {
@@ -162,7 +162,7 @@ public class ClientSocket {
 					}
 					cpos += r;
 					leftsize -= r;
-					logger.trace("read " + r + " byte(s), total read " + cpos + " byte(s), left " + leftsize + " byte(s).");
+					logger.trace("read {} byte(s), total read {} byte(s), left {} byte(s).", r, cpos, leftsize);
 					if (leftsize <= 0)
 						return cpos;
 				}
@@ -186,7 +186,7 @@ public class ClientSocket {
 			OutputStream ous = connect.getOutputStream();
 			ous.write(bytes, pos, size);
 			ous.flush();
-			logger.trace("write " + size + " byte(s).");
+			logger.trace("write {} byte(s).", size);
 			return true;
 		} catch (IOException e) {
 			throw e;
