@@ -147,7 +147,8 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
 				// TimeUnit.SECONDS,
 				// new LinkedBlockingQueue<Runnable>());
 
-				excutor = Executors.newFixedThreadPool(maxServiceThreads);
+				// excutor = Executors.newFixedThreadPool(maxServiceThreads);
+				excutor = Executors.newFixedThreadPool(maxServiceThreads, new NamedThreadFactory(name));
 				threadPoolMap.put(name, excutor);
 			}
 		}
@@ -242,7 +243,7 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
 
 		if (checkHeartBeat(ctx, request))
 			return;
-		
+
 		if (TcpServer.isDebug() && logger.isDebugEnabled())
 			logger.debug("{} Read from Channel with request message ({}){}", ctx, request.getClass(),
 					(request instanceof byte[]) ? new String((byte[]) request) : request);

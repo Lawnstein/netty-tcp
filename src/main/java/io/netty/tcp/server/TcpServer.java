@@ -6,6 +6,8 @@
  */
 package io.netty.tcp.server;
 
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +69,10 @@ public class TcpServer {
 
 	private boolean shortConnection = false;
 
+	private boolean daemon = true;
+
+	private boolean shutdownGracefully = false;
+
 	private AbstractFixedLengthHeaderByteMsgDecoder messageDecoder = null;
 
 	private AbstractFixedLengthHeaderByteMsgEncoder messageEncoder = null;
@@ -79,8 +85,11 @@ public class TcpServer {
 
 	private ServerMessageHandler serverMessageHandler = null;
 
+	private Thread listenThrd = null;
+
 	private static String PROP_DEBUG = "ccbs.tcp.netty.debug";
 	private static String PROP_SHORTCONNECTION = "ccbs.tcp.netty.shortconnection";
+	private static String PROP_SHUTDOWNGRACEFULLY = "ccbs.tcp.netty.shutdowngracefully";
 	private static String PROP_BACKLOG = "ccbs.tcp.netty.backlog";
 	private static String PROP_BOSSTHREDS = "ccbs.tcp.netty.bossthreads";
 	private static String PROP_NIOTHREDS = "ccbs.tcp.netty.niothreads";
@@ -205,6 +214,22 @@ public class TcpServer {
 		this.shortConnection = shortConnection;
 	}
 
+	public boolean isDaemon() {
+		return daemon;
+	}
+
+	public void setDaemon(boolean daemon) {
+		this.daemon = daemon;
+	}
+
+	public boolean isShutdownGracefully() {
+		return shutdownGracefully;
+	}
+
+	public void setShutdownGracefully(boolean shutdownGracefully) {
+		this.shutdownGracefully = shutdownGracefully;
+	}
+
 	public AbstractFixedLengthHeaderByteMsgDecoder getMessageDecoder() {
 		return messageDecoder;
 	}
@@ -238,8 +263,8 @@ public class TcpServer {
 	}
 
 	public ServerMessageHandler createServiceHandler() {
-//		if (serverMessageHandler != null)
-//			return serverMessageHandler;
+		// if (serverMessageHandler != null)
+		// return serverMessageHandler;
 
 		ServerMessageHandler handler = new ServerMessageHandler(serviceHandler);
 		handler.setName(getName() + "-" + port);
@@ -249,7 +274,7 @@ public class TcpServer {
 		handler.setShortConnection(isShortConnection());
 		handler.setMessageDecoder(this.messageDecoder);
 		handler.setMessageEncoder(this.messageEncoder);
-//		serverMessageHandler = handler;
+		// serverMessageHandler = handler;
 		return handler;
 	}
 
@@ -260,6 +285,8 @@ public class TcpServer {
 		}
 		if (null != System.getProperty(PROP_SHORTCONNECTION))
 			this.shortConnection = System.getProperty(PROP_SHORTCONNECTION).equalsIgnoreCase("true");
+		if (null != System.getProperty(PROP_SHUTDOWNGRACEFULLY))
+			this.shutdownGracefully = System.getProperty(PROP_SHUTDOWNGRACEFULLY).equalsIgnoreCase("true");
 		if (null != System.getProperty(PROP_BACKLOG))
 			this.backlog = CommUtil.toInt(System.getProperty(PROP_BACKLOG), 1024);
 		if (null != System.getProperty(PROP_BOSSTHREDS))
@@ -289,15 +316,17 @@ public class TcpServer {
 			throw new RuntimeException("start TcpServer({},{}) failed, no encoder configured.");
 		}
 
-		logger.debug("TcpServer.name : {}", name);
-		logger.debug("TcpServer.port : {}", port);
-		logger.debug("TcpServer.readTimeout : {}", readTimeout);
-		logger.debug("TcpServer.writeTimeout : {}", writeTimeout);
-		logger.debug("TcpServer.SO_BACKLOG : {}", backlog);
-		logger.debug("TcpServer.maxNioThreads : {}", maxNioThreads);
-		logger.debug("TcpServer.maxServiceThreads : {}", maxServiceThreads);
-		logger.debug("TcpServer.messageDecoder : {}", messageDecoder);
-		logger.debug("TcpServer.messageEncoder : {}", messageEncoder);
+		if (logger.isDebugEnabled()) {
+			logger.debug("TcpServer.name : {}", name);
+			logger.debug("TcpServer.port : {}", port);
+			logger.debug("TcpServer.readTimeout : {}", readTimeout);
+			logger.debug("TcpServer.writeTimeout : {}", writeTimeout);
+			logger.debug("TcpServer.SO_BACKLOG : {}", backlog);
+			logger.debug("TcpServer.maxNioThreads : {}", maxNioThreads);
+			logger.debug("TcpServer.maxServiceThreads : {}", maxServiceThreads);
+			logger.debug("TcpServer.messageDecoder : {}", messageDecoder);
+			logger.debug("TcpServer.messageEncoder : {}", messageEncoder);
+		}
 
 		if (maxBossThreads > 0)
 			bossGroup = new NioEventLoopGroup(maxBossThreads);
@@ -353,7 +382,7 @@ public class TcpServer {
 
 	public void start() throws Exception {
 
-		new Thread(new Runnable() {
+		listenThrd = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
@@ -366,13 +395,26 @@ public class TcpServer {
 				}
 			}
 
-		}).start();
+		});
+		if (isDaemon()) {
+			listenThrd.setDaemon(true);
+		}
+		listenThrd.start();
 	}
 
 	public void stop() throws Exception {
 		logger.info("{} stopping ...", name);
-		bossGroup.shutdownGracefully();
-		workerGroup.shutdownGracefully();
-		ServerMessageHandler.stopThreadPool(getName());
+		try {
+			if (shutdownGracefully) {
+				bossGroup.shutdownGracefully();
+				workerGroup.shutdownGracefully();
+			} else {
+				bossGroup.shutdownGracefully(0, 1, TimeUnit.SECONDS);
+				workerGroup.shutdownGracefully(0, 1, TimeUnit.SECONDS);
+			}
+			ServerMessageHandler.stopThreadPool(getName());
+		} catch (Throwable th) {
+			logger.warn("{} stop error.", name, th);
+		}
 	}
 }
