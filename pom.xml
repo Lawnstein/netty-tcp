@@ -5,7 +5,7 @@
 	<name>netty-tcp</name>
 	<groupId>io.netty</groupId>
 	<artifactId>netty-tcp</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<description>netty extended tcp-communication</description>
 
 	<properties>
