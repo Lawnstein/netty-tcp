@@ -96,7 +96,7 @@ public class TcpClient extends AbstractClient {
 		}
 
 		try {
-			sock = ClientSocket.connect(host, port);
+			sock = ClientSocket.connect(host, port, connectTimeout, readTimeout);
 			alived = true;
 		} catch (Exception e) {
 			sock = null;
@@ -161,7 +161,8 @@ public class TcpClient extends AbstractClient {
 		 */
 		try {
 			byte[] le = new byte[this.headLengthSize];
-			int r = ClientSocket.read(sock, le, 0, headLengthSize, readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
+			int r = ClientSocket.read(sock, le, 0, headLengthSize,
+					readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
 			int isz = this.headLengthType.toLength(le);
 			logger.trace("recv response from {} expected size {}({})", rhost, isz, r);
 			byte[] ds = new byte[isz];
@@ -236,7 +237,8 @@ public class TcpClient extends AbstractClient {
 		Object response = null;
 		try {
 			byte[] le = new byte[this.headLengthSize];
-			int r = ClientSocket.read(sock, le, 0, headLengthSize, readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
+			int r = ClientSocket.read(sock, le, 0, headLengthSize,
+					readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
 			int isz = this.headLengthType.toLength(le);
 			logger.trace("recv response from {} expected size {}({})", rhost, isz, r);
 			byte[] ds = new byte[isz];

@@ -39,7 +39,25 @@ public class ClientSocket {
 	 * @throws Exception
 	 */
 	public static Socket connect(String address, int port) throws Exception {
-		return connect(address, port, true, 0, 30000, 30000);
+		return connect(address, port, false, 0, 30000, 30000);
+	}
+
+	/**
+	 * 创建socket连接
+	 * 
+	 * @param address
+	 *            地址
+	 * @param port
+	 *            端口
+	 * @param connectTimeout
+	 *            创建连接等待超时时间毫秒数.
+	 * @param readTimeout
+	 *            读等待超时时间毫秒数.
+	 * @return
+	 * @throws Exception
+	 */
+	public static Socket connect(String address, int port, int connectTimeout, int readTimeout) throws Exception {
+		return connect(address, port, false, 0, connectTimeout, readTimeout);
 	}
 
 	/**
@@ -102,6 +120,11 @@ public class ClientSocket {
 		return socket;
 	}
 
+	/**
+	 * 关闭连接
+	 * 
+	 * @param socket
+	 */
 	public static void close(Socket socket) {
 		if (socket != null && !socket.isClosed()) {
 			try {

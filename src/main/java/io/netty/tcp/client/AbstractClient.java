@@ -18,23 +18,27 @@ public abstract class AbstractClient {
 
 	protected int port;
 
-	/**
-	 * 
-	 */
-	protected int readTimeout = 0;
+	protected boolean soLingerOn = false;
+
+	protected int soLingerNum = 0;
+
 
 	public final static int DEFAULT_READTIMEOUT = 10;
-
-	protected int writeTimeout = 0;
+	
+	protected int readTimeout = DEFAULT_READTIMEOUT * 1000;
 
 	public final static int DEFAULT_WRITETIMEOUT = 3;
-
-	protected int connectTimeout = 10;
 	
+	protected int writeTimeout = DEFAULT_WRITETIMEOUT * 1000;
+
+	public final static int DEFAULT_CONNECTIMEOUT = 3;
+
+	protected int connectTimeout = DEFAULT_CONNECTIMEOUT * 1000;
+
 	protected int heartbeatInervalSec = 0;
 
 	protected int timeout = -1;
-	
+
 	protected boolean alived = false;
 
 	public String getHost() {
@@ -51,6 +55,22 @@ public abstract class AbstractClient {
 
 	public void setPort(int port) {
 		this.port = port;
+	}
+
+	public boolean isSoLingerOn() {
+		return soLingerOn;
+	}
+
+	public void setSoLingerOn(boolean soLingerOn) {
+		this.soLingerOn = soLingerOn;
+	}
+
+	public int getSoLingerNum() {
+		return soLingerNum;
+	}
+
+	public void setSoLingerNum(int soLingerNum) {
+		this.soLingerNum = soLingerNum;
 	}
 
 	public int getReadTimeout() {
@@ -112,7 +132,6 @@ public abstract class AbstractClient {
 	public AbstractClient() {
 	}
 
-	
 	abstract public void close();
 
 	abstract public Object call(Object request);
