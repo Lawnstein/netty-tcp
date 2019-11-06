@@ -11,12 +11,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.tcp.message.handler.coding.AbstractFixedLengthHeaderByteMsgDecoder;
-import io.netty.tcp.message.handler.coding.AbstractFixedLengthHeaderByteMsgEncoder;
-import io.netty.tcp.message.handler.coding.impl.KyroObjectMsgDecoder;
-import io.netty.tcp.message.handler.coding.impl.KyroObjectMsgEncoder;
-import io.netty.tcp.util.CommUtil;
-
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
@@ -28,6 +22,12 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import io.netty.tcp.message.handler.coding.AbstractFixedLengthHeaderByteMsgDecoder;
+import io.netty.tcp.message.handler.coding.AbstractFixedLengthHeaderByteMsgEncoder;
+import io.netty.tcp.message.handler.coding.impl.KyroObjectMsgDecoder;
+import io.netty.tcp.message.handler.coding.impl.KyroObjectMsgEncoder;
+import io.netty.tcp.util.CommUtil;
+import io.netty.util.concurrent.Future;
 
 /**
  * TCP服务器.
@@ -404,17 +404,56 @@ public class TcpServer {
 
 	public void stop() throws Exception {
 		logger.info("{} stopping ...", name);
-		try {
-			if (shutdownGracefully) {
-				bossGroup.shutdownGracefully();
-				workerGroup.shutdownGracefully();
-			} else {
-				bossGroup.shutdownGracefully(0, 1, TimeUnit.SECONDS);
-				workerGroup.shutdownGracefully(0, 1, TimeUnit.SECONDS);
+
+		synchronized (name) {
+
+			if ((bossGroup == null || bossGroup.isShutdown()) && (workerGroup == null || workerGroup.isShutdown())) {
+				return;
 			}
-			ServerMessageHandler.stopThreadPool(getName());
-		} catch (Throwable th) {
-			logger.warn("{} stop error.", name, th);
+
+			try {
+				Future bf = null;
+				Future wf = null;
+				if (shutdownGracefully) {
+					bf = bossGroup.shutdownGracefully();
+					wf = workerGroup.shutdownGracefully();
+				} else {
+					bf = bossGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS);
+					wf = workerGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS);
+				}
+				ServerMessageHandler.stopThreadPool(getName());
+				if (logger.isTraceEnabled())
+					logger.trace(
+							"bf.isDone={}, bf.isSuccess={}, bf.shutdown={}, wf.isDone={}, wf.isSuccess={}, wf.shutdown={}",
+							bf != null ? bf.isDone() : null, bf != null ? bf.isSuccess() : null, bossGroup.isShutdown(),
+							wf != null ? wf.isDone() : null, wf != null ? wf.isSuccess() : null,
+							workerGroup.isShutdown());
+
+				if (!bossGroup.isShutdown() || !workerGroup.isShutdown()) {
+					for (int i = 0; i < 10; i++) {
+						Thread.sleep(1000);
+						if (!bossGroup.isShutdown() || !workerGroup.isShutdown()) {
+							if (logger.isTraceEnabled())
+								logger.trace(
+										"bf.isDone={}, bf.isSuccess={}, bf.shutdown={}, wf.isDone={}, wf.isSuccess={}, wf.shutdown={}",
+										bf != null ? bf.isDone() : null, bf != null ? bf.isSuccess() : null,
+										bossGroup.isShutdown(), wf != null ? wf.isDone() : null,
+										wf != null ? wf.isSuccess() : null, workerGroup.isShutdown());
+							continue;
+						}
+						break;
+					}
+					if (logger.isTraceEnabled()) {
+						logger.trace(
+								"bf.isDone={}, bf.isSuccess={}, bf.shutdown={}, wf.isDone={}, wf.isSuccess={}, wf.shutdown={}",
+								bf != null ? bf.isDone() : null, bf != null ? bf.isSuccess() : null,
+								bossGroup.isShutdown(), wf != null ? wf.isDone() : null,
+								wf != null ? wf.isSuccess() : null, workerGroup.isShutdown());
+					}
+				}
+			} catch (Throwable th) {
+				logger.warn("{} stop error.", name, th);
+			}
 		}
 	}
 }

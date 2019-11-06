@@ -14,18 +14,17 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.tcp.message.HeartBeatMessage;
-import io.netty.tcp.message.handler.coding.AbstractFixedLengthHeaderByteMsgDecoder;
-import io.netty.tcp.message.handler.coding.AbstractFixedLengthHeaderByteMsgEncoder;
-import io.netty.tcp.message.handler.coding.impl.NoneHeadByteMsgEncoder;
-import io.netty.tcp.util.ExceptionUtil;
-
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutException;
+import io.netty.tcp.message.HeartBeatMessage;
+import io.netty.tcp.message.handler.coding.AbstractFixedLengthHeaderByteMsgDecoder;
+import io.netty.tcp.message.handler.coding.AbstractFixedLengthHeaderByteMsgEncoder;
+import io.netty.tcp.message.handler.coding.impl.NoneHeadByteMsgEncoder;
+import io.netty.tcp.util.ExceptionUtil;
 
 /**
  * channel处理.
@@ -157,7 +156,12 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
 
 	public static void stopThreadPool(String name) {
 		if (threadPoolMap.containsKey(name)) {
-			threadPoolMap.get(name).shutdown();
+			try {
+				threadPoolMap.get(name).shutdownNow();
+				threadPoolMap.get(name).shutdown();
+			} catch (Throwable th) {
+				logger.warn("ThreadPool {} shutdown Exception.", name, th);
+			}
 			threadPoolMap.remove(name);
 		}
 	}

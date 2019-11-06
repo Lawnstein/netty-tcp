@@ -9,6 +9,7 @@ package io.netty.tcp.socket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import org.slf4j.Logger;
@@ -27,19 +28,81 @@ public class ClientSocket {
 	public ClientSocket() {
 	}
 
+	/**
+	 * 创建socket连接
+	 * 
+	 * @param address
+	 *            地址
+	 * @param port
+	 *            端口
+	 * @return
+	 * @throws Exception
+	 */
 	public static Socket connect(String address, int port) throws Exception {
-		return connect(address, port, true, 0, 30000);
+		return connect(address, port, true, 0, 30000, 30000);
 	}
 
-	public static Socket connect(String address, int port, boolean soLingerOn, int soLingerNum, int soTimeout)
+	/**
+	 * 创建socket连接
+	 * 
+	 * @param address
+	 *            地址
+	 * @param port
+	 *            端口
+	 * @param soLingerOn
+	 *            套接字关闭时是否等待发送完再关闭连接并返回：是否等待发送完毕.
+	 * @param soLingerNum
+	 *            等待发送完的等待秒数.
+	 * @param readTimeout
+	 *            读等待超时时间毫秒数.
+	 * @return
+	 * @throws Exception
+	 */
+	public static Socket connect(String address, int port, boolean soLingerOn, int soLingerNum, int readTimeout)
 			throws Exception {
 		Socket socket = new Socket(address, port);
 		socket.setSoLinger(soLingerOn, soLingerNum);
-		socket.setSoTimeout(soTimeout);
+		socket.setSoTimeout(readTimeout);
 		return socket;
 	}
-	
-	public static void close(Socket socket)  {
+
+	/**
+	 * 创建socket连接
+	 * 
+	 * @param address
+	 *            地址
+	 * @param port
+	 *            端口
+	 * @param soLingerOn
+	 *            套接字关闭时是否等待发送完再关闭连接并返回：是否等待发送完毕.
+	 * @param soLingerNum
+	 *            等待发送完的等待秒数.
+	 * @param connectTimeout
+	 *            创建连接等待超时时间毫秒数.
+	 * @param readTimeout
+	 *            读等待超时时间毫秒数.
+	 * @return
+	 * @throws Exception
+	 */
+	public static Socket connect(String address, int port, boolean soLingerOn, int soLingerNum, int connectTimeout,
+			int readTimeout) throws Exception {
+		Socket socket = new Socket();
+		try {
+			socket.connect(new InetSocketAddress(address, port), connectTimeout);
+			socket.setSoLinger(soLingerOn, soLingerNum);
+			socket.setSoTimeout(readTimeout);
+		} catch (Exception e) {
+			if (e instanceof java.net.SocketTimeoutException) {
+				if (e.getLocalizedMessage().contains("connect timed out")) {
+					throw new java.net.ConnectException("connect timed out");
+				}
+			}
+			throw e;
+		}
+		return socket;
+	}
+
+	public static void close(Socket socket) {
 		if (socket != null && !socket.isClosed()) {
 			try {
 				socket.shutdownOutput();
