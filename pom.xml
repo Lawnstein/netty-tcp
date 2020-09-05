@@ -1,6 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
 	<modelVersion>4.0.0</modelVersion>
 	<name>netty-tcp</name>
 	<groupId>io.netty</groupId>
@@ -18,8 +17,8 @@
 		<maven.compiler.compilerVersion>${java.version}</maven.compiler.compilerVersion>
 		<maven.skip.install>false</maven.skip.install>
 		<maven.skip.deploy>false</maven.skip.deploy>
-		<slf4j.version>1.7.21</slf4j.version>
-		<netty.all.version>4.0.13.Final</netty.all.version>
+		<slf4j.version>1.7.30</slf4j.version>
+		<netty.all.version>4.1.51.Final</netty.all.version>
 		<kryo.version>2.24.0</kryo.version>
 		<minlog.version>1.2</minlog.version>
 	</properties>
@@ -47,26 +46,6 @@
 			<groupId>com.esotericsoftware.minlog</groupId>
 			<artifactId>minlog</artifactId>
 			<version>${minlog.version}</version>
-		</dependency>
-
-
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>1.1.9</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-access</artifactId>
-			<version>1.1.9</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>jcl-over-slf4j</artifactId>
-			<version>1.7.25</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
