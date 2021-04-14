@@ -1,2 +1,2 @@
 # netty-tcp
-the netty extension, for tcp-communication.
+the netty extension, for tcp-communication && http-communication

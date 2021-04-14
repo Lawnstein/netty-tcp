@@ -4,7 +4,7 @@
 	<name>netty-tcp</name>
 	<groupId>io.netty</groupId>
 	<artifactId>netty-tcp</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 	<description>netty extended tcp-communication</description>
 
 	<properties>
@@ -18,9 +18,10 @@
 		<maven.skip.install>false</maven.skip.install>
 		<maven.skip.deploy>false</maven.skip.deploy>
 		<slf4j.version>1.7.30</slf4j.version>
-		<netty.all.version>4.1.51.Final</netty.all.version>
+		<netty.all.version>4.1.63.Final</netty.all.version>
 		<kryo.version>2.24.0</kryo.version>
 		<minlog.version>1.2</minlog.version>
+		<logback.version>1.1.11</logback.version>
 	</properties>
 
 	<dependencyManagement>
@@ -46,6 +47,25 @@
 			<groupId>com.esotericsoftware.minlog</groupId>
 			<artifactId>minlog</artifactId>
 			<version>${minlog.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${logback.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>${logback.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-access</artifactId>
+			<version>${logback.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

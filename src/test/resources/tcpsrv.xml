@@ -1,0 +1,32 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- admin与sched内部通讯使用 -->
+	<bean class="io.netty.tcp.server.TcpServer" init-method="start" destroy-method="stop">
+		<property name="serviceHandler">
+			<bean class="com.csii.batch.service.oltp.TcpMapServiceHandler" />
+		</property>
+		<property name="port" value="40000" />
+	</bean>
+
+	<!-- sched与业务系统通讯使用 -->
+	<bean class="io.netty.tcp.server.TcpServer" init-method="start" destroy-method="stop">
+		<property name="serviceHandler">
+			<bean class="com.csii.batch.service.oltp.TcpJsonServiceHandler" />
+		</property>
+		<property name="messageDecoder">
+			<bean class="io.netty.tcp.message.handler.coding.impl.DigitsHeadByteMsgDecoder">
+				<property name="headerLengthSize" value="8" />
+			</bean>
+		</property>
+		<property name="messageEncoder">
+			<bean class="io.netty.tcp.message.handler.coding.impl.DigitsHeadByteMsgEncoder">
+				<property name="headerLengthSize" value="8" />
+			</bean>
+		</property>
+		<property name="port" value="40001" />
+	</bean>
+
+</beans>

@@ -2,7 +2,7 @@
  * netty-tcp. Copyright (C) 1999-2017, All rights reserved. This program and the accompanying materials are under the terms of the Apache License Version 2.0.
  */
 
-package io.netty.tcp.server;
+package io.netty.http.server;
 
 import java.util.concurrent.TimeUnit;
 
@@ -19,26 +19,26 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.ServiceAppHandler;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
-import io.netty.tcp.message.handler.coding.AbstractFixedLengthHeaderByteMsgDecoder;
-import io.netty.tcp.message.handler.coding.AbstractFixedLengthHeaderByteMsgEncoder;
-import io.netty.tcp.message.handler.coding.impl.KyroObjectMsgDecoder;
-import io.netty.tcp.message.handler.coding.impl.KyroObjectMsgEncoder;
+// import io.netty.tcp.server.HttpMessageHandler;
 import io.netty.tcp.util.CommUtil;
 import io.netty.util.concurrent.Future;
 
 /**
- * TCP服务器.
+ * HTTP服务器.
  * 
  * @author Lawnstein.Chan
  * @version $Revision:$
  */
-public class TcpServer {
+public class HttpServer {
 
-	protected final static Logger logger = LoggerFactory.getLogger(TcpServer.class);
+	protected final static Logger logger = LoggerFactory.getLogger(HttpServer.class);
 
-	private static String DEFAULT_NAME = "TcpServer";
+	private static String DEFAULT_NAME = "HttpServer";
 
 	private String name = DEFAULT_NAME;
 
@@ -72,9 +72,9 @@ public class TcpServer {
 
 	private boolean shutdownGracefully = false;
 
-	private AbstractFixedLengthHeaderByteMsgDecoder messageDecoder = null;
-
-	private AbstractFixedLengthHeaderByteMsgEncoder messageEncoder = null;
+	// private AbstractFixedLengthHeaderByteMsgDecoder messageDecoder = null;
+	//
+	// private AbstractFixedLengthHeaderByteMsgEncoder messageEncoder = null;
 
 	private ServiceAppHandler serviceHandler = null;
 
@@ -82,21 +82,21 @@ public class TcpServer {
 
 	private EventLoopGroup workerGroup = null;
 
-	// private TcpMessageHandler serverMessageHandler = null;
+	// private HttpMessageHandler serverMessageHandler = null;
 
 	private Thread listenThrd = null;
 
-	private static String PROP_DEBUG = "tcp.netty.debug";
-	private static String PROP_SHORTCONNECTION = "tcp.netty.shortconnection";
-	private static String PROP_SHUTDOWNGRACEFULLY = "tcp.netty.shutdowngracefully";
-	private static String PROP_BACKLOG = "tcp.netty.backlog";
-	private static String PROP_BOSSTHREDS = "tcp.netty.bossthreads";
-	private static String PROP_NIOTHREDS = "tcp.netty.niothreads";
-	private static String PROP_SERVICETHREDS = "tcp.netty.servicethreads";
+	private static String PROP_DEBUG = "http.netty.debug";
+	private static String PROP_SHORTCONNECTION = "http.netty.shortconnection";
+	private static String PROP_SHUTDOWNGRACEFULLY = "http.netty.shutdowngracefully";
+	private static String PROP_BACKLOG = "http.netty.backlog";
+	private static String PROP_BOSSTHREDS = "http.netty.bossthreads";
+	private static String PROP_NIOTHREDS = "http.netty.niothreads";
+	private static String PROP_SERVICETHREDS = "http.netty.servicethreads";
 
 	private static boolean debug = false;
 
-	public TcpServer() {
+	public HttpServer() {
 	}
 
 	public int getPort() {
@@ -229,21 +229,21 @@ public class TcpServer {
 		this.shutdownGracefully = shutdownGracefully;
 	}
 
-	public AbstractFixedLengthHeaderByteMsgDecoder getMessageDecoder() {
-		return messageDecoder;
-	}
-
-	public void setMessageDecoder(AbstractFixedLengthHeaderByteMsgDecoder messageDecoder) {
-		this.messageDecoder = messageDecoder;
-	}
-
-	public AbstractFixedLengthHeaderByteMsgEncoder getMessageEncoder() {
-		return messageEncoder;
-	}
-
-	public void setMessageEncoder(AbstractFixedLengthHeaderByteMsgEncoder messageEncoder) {
-		this.messageEncoder = messageEncoder;
-	}
+	// public AbstractFixedLengthHeaderByteMsgDecoder getMessageDecoder() {
+	// return messageDecoder;
+	// }
+	//
+	// public void setMessageDecoder(AbstractFixedLengthHeaderByteMsgDecoder messageDecoder) {
+	// this.messageDecoder = messageDecoder;
+	// }
+	//
+	// public AbstractFixedLengthHeaderByteMsgEncoder getMessageEncoder() {
+	// return messageEncoder;
+	// }
+	//
+	// public void setMessageEncoder(AbstractFixedLengthHeaderByteMsgEncoder messageEncoder) {
+	// this.messageEncoder = messageEncoder;
+	// }
 
 	public ServiceAppHandler getServiceHandler() {
 		return serviceHandler;
@@ -258,19 +258,17 @@ public class TcpServer {
 	}
 
 	public static void setDebug(boolean debug) {
-		TcpServer.debug = debug;
+		HttpServer.debug = debug;
 	}
 
-	public TcpMessageHandler createMessageHandler() {
-		TcpMessageHandler handler = new TcpMessageHandler(getServiceHandler());
-		handler.setName(getName() + "-" + getPort());
+	public HttpMessageHandler createMessageHandler() {
+		HttpMessageHandler handler = new HttpMessageHandler(serviceHandler);
+		handler.setName(getName() + "-" + port);
 		handler.setDebug(debug);
 		handler.setMinServiceThreads(getMinServiceThreads());
 		handler.setMaxServiceThreads(getMaxServiceThreads());
 		handler.setThreadKeepAliveSeconds(getThreadKeepAliveSeconds());
 		handler.setShortConnection(isShortConnection());
-		handler.setMessageDecoder(getMessageDecoder());
-		handler.setMessageEncoder(getMessageEncoder());
 		return handler;
 	}
 
@@ -284,7 +282,7 @@ public class TcpServer {
 		if (null != System.getProperty(PROP_SHUTDOWNGRACEFULLY))
 			this.shutdownGracefully = System.getProperty(PROP_SHUTDOWNGRACEFULLY).equalsIgnoreCase("true");
 		if (null != System.getProperty(PROP_BACKLOG))
-			this.backlog = CommUtil.toInt(System.getProperty(PROP_BACKLOG), 10240);
+			this.backlog = CommUtil.toInt(System.getProperty(PROP_BACKLOG), 1024);
 		if (null != System.getProperty(PROP_BOSSTHREDS))
 			this.maxBossThreads = CommUtil.toInt(System.getProperty(PROP_BOSSTHREDS), 1);
 		if (null != System.getProperty(PROP_NIOTHREDS))
@@ -295,32 +293,31 @@ public class TcpServer {
 
 	public void bind(int port) throws Exception {
 		initEnvProps();
-		if (messageDecoder == null) {
-			messageDecoder = new KyroObjectMsgDecoder();
-		}
-		if (messageEncoder == null && messageDecoder instanceof KyroObjectMsgDecoder) {
-			messageEncoder = new KyroObjectMsgEncoder();
-		}
-		if (messageDecoder == null) {
-			logger.error("invalid config, no decoder configured.");
-			throw new RuntimeException("start TcpServer(" + name + ", " + port + ") failed, no decoder configured.");
-		}
-		if (messageEncoder == null) {
-			logger.error("invalid config, no encoder configured.");
-			throw new RuntimeException("start TcpServer(" + name + ", " + port + ") failed, no encoder configured.");
-		}
+		// if (messageDecoder == null) {
+		// messageDecoder = new KyroObjectMsgDecoder();
+		// }
+		// if (messageEncoder == null && messageDecoder instanceof KyroObjectMsgDecoder) {
+		// messageEncoder = new KyroObjectMsgEncoder();
+		// }
+		// if (messageDecoder == null) {
+		// logger.error("invalid config, no decoder configured.");
+		// throw new RuntimeException("start HttpServer({},{}) failed, no decoder configured.");
+		// }
+		// if (messageEncoder == null) {
+		// logger.error("invalid config, no encoder configured.");
+		// throw new RuntimeException("start HttpServer({},{}) failed, no encoder configured.");
+		// }
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("TcpServer.name : {}", name);
-			logger.debug("TcpServer.port : {}", port);
-			logger.debug("TcpServer.readTimeout : {}", readTimeout);
-			logger.debug("TcpServer.writeTimeout : {}", writeTimeout);
-			logger.debug("TcpServer.SO_BACKLOG : {}", backlog);
-			logger.debug("TcpServer.maxBossThreads : {}", maxBossThreads);
-			logger.debug("TcpServer.maxNioThreads : {}", maxNioThreads);
-			logger.debug("TcpServer.maxServiceThreads : {}", maxServiceThreads);
-			logger.debug("TcpServer.messageDecoder : {}", messageDecoder);
-			logger.debug("TcpServer.messageEncoder : {}", messageEncoder);
+			logger.debug("HttpServer.name : {}", name);
+			logger.debug("HttpServer.port : {}", port);
+			logger.debug("HttpServer.readTimeout : {}", readTimeout);
+			logger.debug("HttpServer.writeTimeout : {}", writeTimeout);
+			logger.debug("HttpServer.SO_BACKLOG : {}", backlog);
+			logger.debug("HttpServer.maxNioThreads : {}", maxNioThreads);
+			logger.debug("HttpServer.maxServiceThreads : {}", maxServiceThreads);
+			// logger.debug("HttpServer.messageDecoder : {}", messageDecoder);
+			// logger.debug("HttpServer.messageEncoder : {}", messageEncoder);
 		}
 
 		if (maxBossThreads > 0)
@@ -344,18 +341,34 @@ public class TcpServer {
 					        if (writeTimeout > 0)
 						        ch.pipeline().addLast(new WriteTimeoutHandler(writeTimeout));
 
-					        ch.pipeline().addLast(messageDecoder.clone());
-					        ch.pipeline().addLast(messageEncoder.clone());
+					        // ch.pipeline().addLast(messageDecoder.clone());
+					        // ch.pipeline().addLast(messageEncoder.clone());
+					        // ch.pipeline().addLast(createServiceHandler());
+
+//					        // server端发送的是httpResponse，所以要使用HttpResponseEncoder进行编码
+//					        ch.pipeline().addLast(new HttpResponseEncoder());
+//					        // server端接收到的是httpRequest，所以要使用HttpRequestDecoder进行解码
+//					        ch.pipeline().addLast(new HttpRequestDecoder());
+					        
+					     // 解码成HttpRequest
+					        ch.pipeline().addLast(new HttpServerCodec());
+
+			                // 解码成FullHttpRequest
+					        ch.pipeline().addLast(new HttpObjectAggregator(65536));
+
+			                // 添加WebSocket解编码
+					        ch.pipeline().addLast(new WebSocketServerProtocolHandler("/"));
+					        
 					        ch.pipeline().addLast(createMessageHandler());
 				        }
 			        });
 
 			logger.debug("try to bind port {} for {} ...", port, name);
 			ChannelFuture channelFuture = serverBootstrap.bind(port).syncUninterruptibly().addListener(future -> {
-				logger.info("Tcp Server '{}' on port {} started.", name, port);
+				logger.info("Http Server '{}' on port {} started.", name, port);
 			});
 			channelFuture.channel().closeFuture().sync().addListener(future -> {
-				logger.info("Tcp Server '{}' on port {} shutdown ......", name, port);
+				logger.info("Http Server '{}' on port {} shutdown ......", name, port);
 			});
 		} finally {
 			stop();
@@ -363,30 +376,25 @@ public class TcpServer {
 	}
 
 	public void start() throws Exception {
-		if (daemon) {
-			listenThrd = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					Thread.currentThread().setName(name);
-					try {
-						bind(port);
-					} catch (Exception e) {
-						logger.error("{} started on port {} Exception : {}", name, port, e);
-						e.printStackTrace();
-					}
-				}
 
-			});
-			listenThrd.setDaemon(true);
-			listenThrd.start();
-		} else {
-			try {
-				bind(port);
-			} catch (Exception e) {
-				logger.error("{} started on port {} Exception : {}", name, port, e);
-				e.printStackTrace();
+		listenThrd = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				Thread.currentThread().setName(name);
+				try {
+					bind(port);
+				} catch (Exception e) {
+					logger.error("{} started on port {} Exception : {}", name, port, e);
+					e.printStackTrace();
+				}
 			}
+
+		});
+		if (isDaemon()) {
+			listenThrd.setDaemon(true);
 		}
+		listenThrd.start();
 	}
 
 	public void stop() throws Exception {
@@ -408,7 +416,7 @@ public class TcpServer {
 					bf = bossGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS);
 					wf = workerGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS);
 				}
-				TcpMessageHandler.stopThreadPool(getName());
+				HttpMessageHandler.stopThreadPool(getName());
 				if (logger.isTraceEnabled())
 					logger.trace("bf.isDone={}, bf.isSuccess={}, bf.shutdown={}, wf.isDone={}, wf.isSuccess={}, wf.shutdown={}", bf != null ? bf
 					        .isDone() : null, bf != null ? bf.isSuccess() : null, bossGroup
@@ -432,15 +440,9 @@ public class TcpServer {
 						                .isShutdown(), wf != null ? wf.isDone() : null, wf != null ? wf.isSuccess() : null, workerGroup.isShutdown());
 					}
 				}
-
-				if (listenThrd != null) {
-					listenThrd.interrupt();
-				}
-
 			} catch (Throwable th) {
 				logger.warn("{} stop error.", name, th);
 			}
-
 		}
 	}
 }

@@ -1,9 +1,7 @@
 /**
- * netty-tcp.
- * Copyright (C) 1999-2017, All rights reserved.
- *
- * This program and the accompanying materials are under the terms of the Apache License Version 2.0.
+ * netty-tcp. Copyright (C) 1999-2017, All rights reserved. This program and the accompanying materials are under the terms of the Apache License Version 2.0.
  */
+
 package io.netty.tcp.server;
 
 import java.util.HashMap;
@@ -14,10 +12,12 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.ServiceAppHandler;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutException;
 import io.netty.tcp.message.HeartBeatMessage;
@@ -33,8 +33,8 @@ import io.netty.tcp.util.ExceptionUtil;
  * @version $Revision:$
  */
 @Sharable
-public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
-	protected final static Logger logger = LoggerFactory.getLogger(TcpServer.class);
+public class TcpMessageHandler extends ChannelInboundHandlerAdapter {
+	protected final static Logger logger = LoggerFactory.getLogger(TcpMessageHandler.class);
 
 	protected static String KEY_PING = HeartBeatMessage.KEY_PING;
 	protected static String KEY_HEARTBEAT = HeartBeatMessage.KEY_HEARTBEAT;
@@ -49,6 +49,8 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
 
 	private String name;
 
+	private boolean debug;
+
 	private int minServiceThreads = 0;
 
 	private int maxServiceThreads = 0;
@@ -62,7 +64,7 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
 	 */
 	private final static Map<String, ExecutorService> threadPoolMap = new HashMap<String, ExecutorService>();
 
-	public ServerMessageHandler(ServiceAppHandler serviceHandler) {
+	public TcpMessageHandler(ServiceAppHandler serviceHandler) {
 		super();
 		this.serviceHandler = serviceHandler;
 	}
@@ -105,6 +107,14 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public boolean isDebug() {
+		return debug;
+	}
+
+	public void setDebug(boolean debug) {
+		this.debug = debug;
 	}
 
 	public ServiceAppHandler getServiceHandler() {
@@ -169,21 +179,21 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
 	@Override
 	public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
 		ctx.fireChannelRegistered();
-		if (TcpServer.isDebug() && logger.isDebugEnabled())
+		if (isDebug() && logger.isDebugEnabled())
 			logger.debug("{} registered.", ctx);
 	}
 
 	@Override
 	public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
 		ctx.fireChannelUnregistered();
-		if (TcpServer.isDebug() && logger.isDebugEnabled())
+		if (isDebug() && logger.isDebugEnabled())
 			logger.debug("{} unregistered.", ctx);
 	}
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
 		ctx.fireChannelActive();
-		if (TcpServer.isDebug() && logger.isDebugEnabled())
+		if (isDebug() && logger.isDebugEnabled())
 			logger.debug("{} active.", ctx);
 	}
 
@@ -192,7 +202,7 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
 		this.serviceHandler.onChannelClosed(ctx.channel());
 		ctx.fireChannelInactive();
 
-		if (TcpServer.isDebug() && logger.isDebugEnabled())
+		if (isDebug() && logger.isDebugEnabled())
 			logger.debug("{} inactive.", ctx);
 	}
 
@@ -200,13 +210,12 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
 		if (!(request instanceof String))
 			return false;
 
-		if (KEY_HEARTBEAT.equals((String) request)
-				|| (request instanceof byte[] && ((byte[]) request).length == KEY_HEARTBEAT.length()
-						&& KEY_HEARTBEAT.equals(new String((byte[]) request)))) {
+		if (KEY_HEARTBEAT.equals((String) request) || (request instanceof byte[] && ((byte[]) request).length == KEY_HEARTBEAT.length() && KEY_HEARTBEAT
+		        .equals(new String((byte[]) request)))) {
 
 			if (this.messageEncoder == null || (this.messageEncoder instanceof NoneHeadByteMsgEncoder)) {
-				ctx.write(this.messageDecoder.getHeadLengthType().toBytes(messageDecoder.getHeaderLengthSize(),
-						messageDecoder.isHeaderLengthIncluded(), KEY_ALIVE_BODY_BYTES.length));
+				ctx.write(this.messageDecoder.getHeadLengthType()
+				        .toBytes(messageDecoder.getHeaderLengthSize(), messageDecoder.isHeaderLengthIncluded(), KEY_ALIVE_BODY_BYTES.length));
 			}
 
 			if (shortConnection) {
@@ -221,14 +230,14 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
 					ctx.writeAndFlush(KEY_ALIVE_BODY_BYTES);
 			}
 
-			if (TcpServer.isDebug() && logger.isDebugEnabled())
+			if (isDebug() && logger.isDebugEnabled())
 				logger.debug("{} HeartBeat alived, is short connection ? {}.", ctx, shortConnection);
 
 			return true;
-		} else if (KEY_PING.equals((String) request) || (request instanceof byte[]
-				&& ((byte[]) request).length == KEY_PING.length() && KEY_PING.equals(new String((byte[]) request)))) {
+		} else if (KEY_PING.equals((String) request) || (request instanceof byte[] && ((byte[]) request).length == KEY_PING.length() && KEY_PING
+		        .equals(new String((byte[]) request)))) {
 
-			if (TcpServer.isDebug() && logger.isDebugEnabled())
+			if (isDebug() && logger.isDebugEnabled())
 				logger.debug("{} ping ok, is short connection ? {}.", ctx, shortConnection);
 
 			return true;
@@ -240,7 +249,7 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
 	@Override
 	public void channelRead(final ChannelHandlerContext ctx, final Object request) throws Exception {
 		if (request == null) {
-			if (TcpServer.isDebug() && logger.isDebugEnabled())
+			if (isDebug() && logger.isDebugEnabled())
 				logger.debug("{} request is null, ignore it.", ctx);
 			return;
 		}
@@ -248,9 +257,17 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
 		if (checkHeartBeat(ctx, request))
 			return;
 
-		if (TcpServer.isDebug() && logger.isDebugEnabled())
-			logger.debug("{} Read from Channel with request message ({}){}", ctx, request.getClass(),
-					(request instanceof byte[]) ? new String((byte[]) request) : request);
+		if (isDebug() && logger.isDebugEnabled())
+			logger.debug("{} Read from Channel with request message ({}){}", ctx, request
+			        .getClass(), (request instanceof byte[]) ? new String((byte[]) request) : request);
+		
+		if (serviceHandler == null) {
+			logger.warn("No appServiceHandler assigned.");
+			if (shortConnection) {
+				ctx.disconnect();
+			}
+			return;
+		}
 
 		getExcutorThread().execute(new Runnable() {
 
@@ -258,17 +275,14 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
 
 				try {
 
-					if (TcpServer.isDebug() && logger.isDebugEnabled())
+					if (isDebug() && logger.isDebugEnabled())
 						logger.debug("{} proccess in thread {} ", ctx, Thread.currentThread());
 
 					Object response = serviceHandler.call(request, ctx.channel());
 					if (response != null) {
-						if (TcpServer.isDebug() && logger.isDebugEnabled())
-							logger.debug(
-									"{} Write to Channel with response message : ({}){}, is short connection ? {}.",
-									ctx, response.getClass(),
-									(response instanceof byte[]) ? new String((byte[]) response) : response,
-									shortConnection);
+						if (isDebug() && logger.isDebugEnabled())
+							logger.debug("{} Write to Channel with response message : ({}){}, is short connection ? {}.", ctx, response
+							        .getClass(), (response instanceof byte[]) ? new String((byte[]) response) : response, shortConnection);
 
 						if (shortConnection)
 							ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
@@ -276,7 +290,7 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
 							ctx.writeAndFlush(response);
 
 					} else {
-						if (TcpServer.isDebug() && logger.isDebugEnabled())
+						if (isDebug() && logger.isDebugEnabled())
 							logger.debug("{} Write to Channel with none response message", ctx);
 					}
 				} catch (Throwable th) {

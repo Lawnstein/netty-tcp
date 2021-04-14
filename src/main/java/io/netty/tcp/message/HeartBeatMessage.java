@@ -24,7 +24,6 @@ public class HeartBeatMessage {
 	 */
 	public static String KEY_ALIVE = "ALIVE";
 
-
 	/**
 	 * 通道檢測
 	 */

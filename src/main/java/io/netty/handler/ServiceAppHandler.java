@@ -4,7 +4,7 @@
  *
  * This program and the accompanying materials are under the terms of the Apache License Version 2.0.
  */
-package io.netty.tcp.server;
+package io.netty.handler;
 
 import io.netty.channel.Channel;
 
