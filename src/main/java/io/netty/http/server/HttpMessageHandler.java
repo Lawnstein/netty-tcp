@@ -38,7 +38,7 @@ import io.netty.tcp.server.NamedThreadFactory;
 import io.netty.tcp.util.ExceptionUtil;
 
 /**
- * channel处理.
+ * http channel处理.
  * 
  * @author Lawnstein.Chan
  * @version $Revision:$

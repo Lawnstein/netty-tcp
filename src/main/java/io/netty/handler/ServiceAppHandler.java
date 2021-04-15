@@ -9,7 +9,7 @@ package io.netty.handler;
 import io.netty.channel.Channel;
 
 /**
- * 服务端业务处理.
+ * 应用逻辑服务端业务处理.
  * 
  * @author Lawnstein.Chan
  * @version $Revision:$

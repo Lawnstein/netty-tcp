@@ -27,7 +27,7 @@ import io.netty.tcp.message.handler.coding.impl.NoneHeadByteMsgEncoder;
 import io.netty.tcp.util.ExceptionUtil;
 
 /**
- * channel处理.
+ * tcp channel的处理.
  * 
  * @author Lawnstein.Chan
  * @version $Revision:$
