@@ -22,6 +22,11 @@
 		<kryo.version>2.24.0</kryo.version>
 		<minlog.version>1.2</minlog.version>
 		<logback.version>1.1.11</logback.version>
+
+		<nexus.distribution.repository.id>nexus-pcbs-base</nexus.distribution.repository.id>
+		<nexus.distribution.repository.url>http://61.155.2.142:82/repository/csii-pcbs-base/</nexus.distribution.repository.url>
+		<nexus.distribution.snapshot.id>nexus-snapshots</nexus.distribution.snapshot.id>
+		<nexus.distribution.snapshot.url>http://61.155.2.142:82/repository/snapshots/</nexus.distribution.snapshot.url>
 	</properties>
 
 	<dependencyManagement>
@@ -69,4 +74,14 @@
 		</dependency>
 	</dependencies>
 
+	<distributionManagement>
+		<repository>
+			<id>${nexus.distribution.repository.id}</id>
+			<url>${nexus.distribution.repository.url}</url>
+		</repository>
+		<snapshotRepository>
+			<id>${nexus.distribution.snapshot.id}</id>
+			<url>${nexus.distribution.snapshot.url}</url>
+		</snapshotRepository>
+	</distributionManagement>
 </project>
