@@ -23,7 +23,9 @@ public class TcpApp1Handler implements ServiceAppHandler {
 	@Override
 	public Object call(Object request, Channel channel) {
 		logger.debug("recv {}", new String((byte[]) request));
-		return ("Response" + System.currentTimeMillis() + "").getBytes();
+		String res = "Response" + System.currentTimeMillis();
+		// return res.getBytes();
+		return res;
 	}
 
 	@Override

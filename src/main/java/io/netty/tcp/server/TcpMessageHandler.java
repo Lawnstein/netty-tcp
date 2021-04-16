@@ -289,16 +289,17 @@ public class TcpMessageHandler extends ChannelInboundHandlerAdapter {
 					if (isDebug() && logger.isDebugEnabled())
 						logger.debug("{} proccess in thread {} ", ctx, Thread.currentThread());
 
-					Object response = serviceHandler.call(request, ctx.channel());
-					if (response != null) {
+					Object responseBody = serviceHandler.call(request, ctx.channel());
+					if (responseBody != null) {
 						if (isDebug() && logger.isDebugEnabled())
-							logger.debug("{} Write to Channel with response message : ({}){}, is short connection ? {}.", ctx, response
-							        .getClass(), (response instanceof byte[]) ? new String((byte[]) response) : response, shortConnection);
+							logger.debug("{} Write to Channel with response message : ({}){}, is short connection ? {}.", ctx, responseBody
+							        .getClass(), (responseBody instanceof byte[]) ? new String((byte[]) responseBody) : responseBody, shortConnection);
 
+						byte[] responseBodyBytes = (responseBody instanceof byte[]) ? (byte[]) responseBody : responseBody.toString().getBytes();
 						if (shortConnection)
-							ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+							ctx.writeAndFlush(responseBodyBytes).addListener(ChannelFutureListener.CLOSE);
 						else
-							ctx.writeAndFlush(response);
+							ctx.writeAndFlush(responseBodyBytes);
 
 					} else {
 						if (isDebug() && logger.isDebugEnabled())

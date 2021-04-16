@@ -289,8 +289,7 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 								logger.debug("{} Write to Channel with response message : ({}){}, is short connection ? {}.", ctx, responseBody
 								        .getClass(), (responseBody instanceof byte[]) ? new String((byte[]) responseBody) : responseBody, shortConnection);
 
-							byte[] responseBodyBytes = (responseBody instanceof byte[]) ? (byte[]) responseBody : ((String) responseBody)
-							        .getBytes(contentEncoding);
+							byte[] responseBodyBytes = (responseBody instanceof byte[]) ? (byte[]) responseBody : responseBody.toString().getBytes(contentEncoding);
 							FullHttpResponse response = new DefaultFullHttpResponse(protocalVersion, OK, Unpooled.wrappedBuffer(responseBodyBytes));
 							response.headers().set(CONTENT_TYPE, contentType);
 							response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
