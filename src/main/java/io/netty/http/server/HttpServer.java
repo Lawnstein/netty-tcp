@@ -4,6 +4,7 @@
 
 package io.netty.http.server;
 
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -46,7 +47,7 @@ public class HttpServer {
 
 	private int readTimeout = 0;
 
-	private static int DEFAULT_READTIMEOUT = 10;
+	private static int DEFAULT_READTIMEOUT = 30;
 
 	private int writeTimeout = 0;
 
@@ -64,6 +65,8 @@ public class HttpServer {
 
 	private int maxServiceThreads = Runtime.getRuntime().availableProcessors() * 2;
 
+	private String websocketPath = null;
+	
 	private int threadKeepAliveSeconds = 0;
 
 	private boolean shortConnection = false;
@@ -72,17 +75,11 @@ public class HttpServer {
 
 	private boolean shutdownGracefully = false;
 
-	// private AbstractFixedLengthHeaderByteMsgDecoder messageDecoder = null;
-	//
-	// private AbstractFixedLengthHeaderByteMsgEncoder messageEncoder = null;
-
 	private ServiceAppHandler serviceHandler = null;
 
 	private EventLoopGroup bossGroup = null;
 
 	private EventLoopGroup workerGroup = null;
-
-	// private HttpMessageHandler serverMessageHandler = null;
 
 	private Thread listenThrd = null;
 
@@ -197,6 +194,14 @@ public class HttpServer {
 		this.threadKeepAliveSeconds = threadKeepAliveSeconds;
 	}
 
+	public String getWebsocketPath() {
+		return websocketPath;
+	}
+
+	public void setWebsocketPath(String websocketPath) {
+		this.websocketPath = websocketPath;
+	}
+
 	public int getWorkerNumb() {
 		return maxServiceThreads;
 	}
@@ -286,38 +291,24 @@ public class HttpServer {
 		if (null != System.getProperty(PROP_BOSSTHREDS))
 			this.maxBossThreads = CommUtil.toInt(System.getProperty(PROP_BOSSTHREDS), 1);
 		if (null != System.getProperty(PROP_NIOTHREDS))
-			this.maxNioThreads = CommUtil.toInt(System.getProperty(PROP_NIOTHREDS), Runtime.getRuntime().availableProcessors() * 2);
+			this.maxNioThreads = CommUtil.toInt(System.getProperty(PROP_NIOTHREDS), Runtime.getRuntime().availableProcessors());
 		if (null != System.getProperty(PROP_SERVICETHREDS))
-			this.maxServiceThreads = CommUtil.toInt(System.getProperty(PROP_SERVICETHREDS), Runtime.getRuntime().availableProcessors());
+			this.maxServiceThreads = CommUtil.toInt(System.getProperty(PROP_SERVICETHREDS), Runtime.getRuntime().availableProcessors() * 2);
 	}
 
 	public void bind(int port) throws Exception {
 		initEnvProps();
-		// if (messageDecoder == null) {
-		// messageDecoder = new KyroObjectMsgDecoder();
-		// }
-		// if (messageEncoder == null && messageDecoder instanceof KyroObjectMsgDecoder) {
-		// messageEncoder = new KyroObjectMsgEncoder();
-		// }
-		// if (messageDecoder == null) {
-		// logger.error("invalid config, no decoder configured.");
-		// throw new RuntimeException("start HttpServer({},{}) failed, no decoder configured.");
-		// }
-		// if (messageEncoder == null) {
-		// logger.error("invalid config, no encoder configured.");
-		// throw new RuntimeException("start HttpServer({},{}) failed, no encoder configured.");
-		// }
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("HttpServer.name : {}", name);
 			logger.debug("HttpServer.port : {}", port);
+			logger.debug("HttpServer.timeout : {}", timeout);
 			logger.debug("HttpServer.readTimeout : {}", readTimeout);
 			logger.debug("HttpServer.writeTimeout : {}", writeTimeout);
-			logger.debug("HttpServer.SO_BACKLOG : {}", backlog);
-			logger.debug("HttpServer.maxNioThreads : {}", maxNioThreads);
+			logger.debug("HttpServer.so_backup : {}", backlog);
+			logger.debug("HttpServer.maxBossThreads : {} {}", maxBossThreads, maxBossThreads == 0 ? "(will use default setting)" : "");
+			logger.debug("HttpServer.maxNioThreads : {} {}", maxNioThreads, maxNioThreads == 0 ? "(will use default setting)" : "");
 			logger.debug("HttpServer.maxServiceThreads : {}", maxServiceThreads);
-			// logger.debug("HttpServer.messageDecoder : {}", messageDecoder);
-			// logger.debug("HttpServer.messageEncoder : {}", messageEncoder);
 		}
 
 		if (maxBossThreads > 0)
@@ -330,35 +321,39 @@ public class HttpServer {
 			workerGroup = new NioEventLoopGroup();
 		try {
 			ServerBootstrap serverBootstrap = new ServerBootstrap();
-			serverBootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).option(ChannelOption.SO_REUSEADDR, true)
-			        .option(ChannelOption.SO_BACKLOG, backlog).option(ChannelOption.SO_KEEPALIVE, true).option(ChannelOption.TCP_NODELAY, true)
-			        .option(ChannelOption.ALLOW_HALF_CLOSURE, true).option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-			        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT).childHandler(new ChannelInitializer<SocketChannel>() {
+			serverBootstrap.group(bossGroup, workerGroup)
+			.channel(NioServerSocketChannel.class)
+			.option(ChannelOption.SO_REUSEADDR, true)	// 端口复用
+			.option(ChannelOption.SO_BACKLOG, backlog)	//最大并发连接数
+			//.option(ChannelOption.SO_KEEPALIVE, true)	//是否保持长连接,可发送keep-alive包
+			//.option(ChannelOption.TCP_NODELAY, true)	//是否允许延迟组包发送
+			//.option(ChannelOption.ALLOW_HALF_CLOSURE, true)	//是否允许半关闭状态,主要用于server可继续发送数据,client不能发送数据
+			.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)	//零拷贝
+			.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)	//零拷贝
+			.childHandler(new ChannelInitializer<SocketChannel>() {
 				        @Override
 				        public void initChannel(SocketChannel ch) throws Exception {
+				        	if (isDebug() && logger.isDebugEnabled()) {
+				        			logger.debug("{} accepted.", ch);
+				        	}
+				        	
 					        if (readTimeout > 0)
 						        ch.pipeline().addLast(new ReadTimeoutHandler(readTimeout));
 					        if (writeTimeout > 0)
 						        ch.pipeline().addLast(new WriteTimeoutHandler(writeTimeout));
 
-					        // ch.pipeline().addLast(messageDecoder.clone());
-					        // ch.pipeline().addLast(messageEncoder.clone());
-					        // ch.pipeline().addLast(createServiceHandler());
-
-//					        // server端发送的是httpResponse，所以要使用HttpResponseEncoder进行编码
-//					        ch.pipeline().addLast(new HttpResponseEncoder());
-//					        // server端接收到的是httpRequest，所以要使用HttpRequestDecoder进行解码
-//					        ch.pipeline().addLast(new HttpRequestDecoder());
-					        
-					     // 解码成HttpRequest
+					        // 解码成HttpRequest
 					        ch.pipeline().addLast(new HttpServerCodec());
 
 			                // 解码成FullHttpRequest
 					        ch.pipeline().addLast(new HttpObjectAggregator(65536));
 
 			                // 添加WebSocket解编码
-					        ch.pipeline().addLast(new WebSocketServerProtocolHandler("/"));
+					        if (getWebsocketPath() != null) {
+					        	ch.pipeline().addLast(new WebSocketServerProtocolHandler(getWebsocketPath()));
+					        }
 					        
+					        // 应用逻辑处理
 					        ch.pipeline().addLast(createMessageHandler());
 				        }
 			        });
@@ -367,7 +362,7 @@ public class HttpServer {
 			ChannelFuture channelFuture = serverBootstrap.bind(port).syncUninterruptibly().addListener(future -> {
 				logger.info("Http Server '{}' on port {} started.", name, port);
 			});
-			channelFuture.channel().closeFuture().sync().addListener(future -> {
+			channelFuture.channel().closeFuture().syncUninterruptibly().addListener(future -> {
 				logger.info("Http Server '{}' on port {} shutdown ......", name, port);
 			});
 		} finally {
@@ -376,20 +371,16 @@ public class HttpServer {
 	}
 
 	public void start() throws Exception {
-
 		listenThrd = new Thread(new Runnable() {
-
 			@Override
 			public void run() {
 				Thread.currentThread().setName(name);
 				try {
 					bind(port);
 				} catch (Exception e) {
-					logger.error("{} started on port {} Exception : {}", name, port, e);
-					e.printStackTrace();
+					logger.error("{} bind on port {} failed.", name, port, e);
 				}
 			}
-
 		});
 		if (isDaemon()) {
 			listenThrd.setDaemon(true);

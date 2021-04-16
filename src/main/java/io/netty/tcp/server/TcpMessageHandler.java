@@ -206,6 +206,17 @@ public class TcpMessageHandler extends ChannelInboundHandlerAdapter {
 			logger.debug("{} inactive.", ctx);
 	}
 
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+		// ctx.fireExceptionCaught(cause);
+		logger.warn("{} server channel exceptionCaught : {}", ctx, cause.getMessage());
+		this.serviceHandler.onChannelException(ctx.channel(), cause);
+		if (cause != null && !(cause instanceof ReadTimeoutException) && !(cause instanceof WriteTimeoutException)) {
+			ctx.close();
+			// logger.debug("close the context {} for the causedException {}", ctx, cause);
+		}
+	}
+
 	private boolean checkHeartBeat(final ChannelHandlerContext ctx, final Object request) {
 		if (!(request instanceof String))
 			return false;
@@ -260,7 +271,7 @@ public class TcpMessageHandler extends ChannelInboundHandlerAdapter {
 		if (isDebug() && logger.isDebugEnabled())
 			logger.debug("{} Read from Channel with request message ({}){}", ctx, request
 			        .getClass(), (request instanceof byte[]) ? new String((byte[]) request) : request);
-		
+
 		if (serviceHandler == null) {
 			logger.warn("No appServiceHandler assigned.");
 			if (shortConnection) {
@@ -300,23 +311,6 @@ public class TcpMessageHandler extends ChannelInboundHandlerAdapter {
 			}
 		});
 
-	}
-
-	// @Override
-	// public void channelReadComplete(ChannelHandlerContext ctx) throws
-	// Exception {
-	// ctx.fireChannelReadComplete();
-	// }
-
-	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-		ctx.fireExceptionCaught(cause);
-		logger.warn("{} server channel exceptionCaught : {}", this, ExceptionUtil.getStackTrace(cause));
-		this.serviceHandler.onChannelException(ctx.channel(), cause);
-		if (cause != null && !(cause instanceof ReadTimeoutException) && !(cause instanceof WriteTimeoutException)) {
-			ctx.close();
-			logger.debug("close the context {} for the causedException {}", ctx, cause);
-		}
 	}
 
 }

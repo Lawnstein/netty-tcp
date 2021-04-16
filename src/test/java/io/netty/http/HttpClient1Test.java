@@ -20,11 +20,11 @@ public class HttpClient1Test {
 	protected final static Logger logger = LoggerFactory.getLogger(HttpClient1Test.class);
 
 	public static void main(String[] args) {
-		String url = "http://127.0.0.1:" + HTTPServer1Test.PORT + "/#";
+		String url = "http://127.0.0.1:" + HTTPServer1Test.PORT ;//+ "/#";
 		String result = HttpClient.doGet(url);
 		logger.debug("doGet:" + result);
 		
-		url = "http://127.0.0.1:" + HTTPServer1Test.PORT + "/45001";
+		url = "http://127.0.0.1:" + HTTPServer1Test.PORT ;//+ "/45001";
 		
 		result = HttpClient.doPost(url, "text/json", "{ \"kind\" : \"1\"}");
 		logger.debug("doPost:" + result);

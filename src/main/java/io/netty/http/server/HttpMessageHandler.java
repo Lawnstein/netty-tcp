@@ -34,7 +34,7 @@ import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutException;
 import io.netty.tcp.message.HeartBeatMessage;
 import io.netty.tcp.server.NamedThreadFactory;
-//import io.netty.tcp.server.ServiceAppHandler;
+// import io.netty.tcp.server.ServiceAppHandler;
 import io.netty.tcp.util.ExceptionUtil;
 
 /**
@@ -50,11 +50,6 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 	protected static String KEY_PING = HeartBeatMessage.KEY_PING;
 	protected static String KEY_HEARTBEAT = HeartBeatMessage.KEY_HEARTBEAT;
 	protected static String KEY_ALIVE = HeartBeatMessage.KEY_ALIVE;
-	// protected static byte[] KEY_ALIVE_BODY_BYTES = KEY_ALIVE.getBytes();
-
-	// private AbstractFixedLengthHeaderByteMsgDecoder messageDecoder = null;
-	//
-	// private AbstractFixedLengthHeaderByteMsgEncoder messageEncoder = null;
 
 	private ServiceAppHandler serviceHandler;
 
@@ -75,32 +70,10 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 	 */
 	private final static Map<String, ExecutorService> threadPoolMap = new HashMap<String, ExecutorService>();
 
-	// private HttpRequest request;
-	// private StringBuilder buffer = new StringBuilder();
-	// private String url = "";
-	// private String uri = "";
-	// private StringBuilder respone;
-
 	public HttpMessageHandler(ServiceAppHandler serviceHandler) {
 		super();
 		this.serviceHandler = serviceHandler;
 	}
-
-	// public AbstractFixedLengthHeaderByteMsgDecoder getMessageDecoder() {
-	// return messageDecoder;
-	// }
-	//
-	// public void setMessageDecoder(AbstractFixedLengthHeaderByteMsgDecoder messageDecoder) {
-	// this.messageDecoder = messageDecoder;
-	// }
-	//
-	// public AbstractFixedLengthHeaderByteMsgEncoder getMessageEncoder() {
-	// return messageEncoder;
-	// }
-	//
-	// public void setMessageEncoder(AbstractFixedLengthHeaderByteMsgEncoder messageEncoder) {
-	// this.messageEncoder = messageEncoder;
-	// }
 
 	public int getMaxServiceThreads() {
 		return maxServiceThreads;
@@ -223,50 +196,16 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 			logger.debug("{} inactive.", ctx);
 	}
 
-	// private boolean checkHeartBeat(final ChannelHandlerContext ctx, final Object request) {
-	// if (!(request instanceof String))
-	// return false;
-	//
-	// if (KEY_HEARTBEAT.equals((String) request) || (request instanceof byte[] && ((byte[]) request).length == KEY_HEARTBEAT.length() && KEY_HEARTBEAT
-	// .equals(new String((byte[]) request)))) {
-	//
-	// if (this.messageEncoder == null || (this.messageEncoder instanceof NoneHeadByteMsgEncoder)) {
-	// ctx.write(this.messageDecoder.getHeadLengthType()
-	// .toBytes(messageDecoder.getHeaderLengthSize(), messageDecoder.isHeaderLengthIncluded(), KEY_ALIVE_BODY_BYTES.length));
-	// }
-	//
-	// if (shortConnection) {
-	// if (request instanceof String)
-	// ctx.writeAndFlush(KEY_ALIVE).addListener(ChannelFutureListener.CLOSE);
-	// else
-	// ctx.writeAndFlush(KEY_ALIVE_BODY_BYTES).addListener(ChannelFutureListener.CLOSE);
-	// } else {
-	// if (request instanceof String)
-	// ctx.writeAndFlush(KEY_ALIVE);
-	// else
-	// ctx.writeAndFlush(KEY_ALIVE_BODY_BYTES);
-	// }
-	//
-	// if (isDebug() && logger.isDebugEnabled())
-	// logger.debug("{} HeartBeat alived, is short connection ? {}.", ctx, shortConnection);
-	//
-	// return true;
-	// } else if (KEY_PING.equals((String) request) || (request instanceof byte[] && ((byte[]) request).length == KEY_PING.length() && KEY_PING
-	// .equals(new String((byte[]) request)))) {
-	//
-	// if (isDebug() && logger.isDebugEnabled())
-	// logger.debug("{} ping ok, is short connection ? {}.", ctx, shortConnection);
-	//
-	// return true;
-	// }
-	//
-	// return false;
-	// }
-
-	// private static void notify100Continue(ChannelHandlerContext ctx) {
-	// FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, CONTINUE);
-	// ctx.write(response);
-	// }
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+		// ctx.fireExceptionCaught(cause);
+		logger.warn("{} server channel exceptionCaught : {}", ctx, cause.getMessage());
+		this.serviceHandler.onChannelException(ctx.channel(), cause);
+		if (cause != null && !(cause instanceof ReadTimeoutException) && !(cause instanceof WriteTimeoutException)) {
+			ctx.close();
+			// logger.debug("close the context {} for the causedException {}", ctx, cause);
+		}
+	}
 
 	private void errorResponse(final ChannelHandlerContext ctx, final Throwable thr) {
 		byte[] message = null;
@@ -374,23 +313,6 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 			});
 		} catch (Throwable thr) {
 			errorResponse(ctx, thr);
-		}
-	}
-
-	// @Override
-	// public void channelReadComplete(ChannelHandlerContext ctx) throws
-	// Exception {
-	// ctx.fireChannelReadComplete();
-	// }
-
-	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-		ctx.fireExceptionCaught(cause);
-		logger.warn("{} server channel exceptionCaught : {}", this, ExceptionUtil.getStackTrace(cause));
-		this.serviceHandler.onChannelException(ctx.channel(), cause);
-		if (cause != null && !(cause instanceof ReadTimeoutException) && !(cause instanceof WriteTimeoutException)) {
-			ctx.close();
-			logger.debug("close the context {} for the causedException {}", ctx, cause);
 		}
 	}
 

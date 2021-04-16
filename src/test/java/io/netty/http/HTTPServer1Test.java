@@ -26,6 +26,7 @@ public class HTTPServer1Test {
 		ts.setDaemon(false);
 		ts.setServiceHandler(new HttpApp1Handler());
 		ts.setDebug(true);
+		// ts.setShortConnection(true);
 		logger.debug("HttpServer {} starting ...... ", ts);
 		try {
 			ts.start();

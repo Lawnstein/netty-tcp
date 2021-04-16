@@ -30,6 +30,27 @@ public class HttpClient {
 	protected final static int CONNECT_TIMEOUT_MILLIS = 30000;// 设置连接主机服务器的超时时间：30秒
 	protected final static int READ_TIMEOUT_MILLIS = 300000;// 设置读取远程返回的数据时间：5分
 
+	private static void disconnect(HttpURLConnection connection) {
+		if (connection == null) {
+			return;
+		}
+		try {
+			if (connection.getInputStream() != null) {
+				connection.getInputStream().close();
+			}
+		} catch (IOException e) {
+		}
+		
+		try {
+			if (connection.getOutputStream() != null) {
+				connection.getOutputStream().close();
+			}
+		} catch (IOException e) {
+		}
+		
+		connection.disconnect();
+	}
+
 	private static List<String> readResponse(InputStream is) {
 		if (is == null) {
 			return null;
@@ -105,9 +126,8 @@ public class HttpClient {
 				} catch (IOException e) {
 				}
 			}
-			if (connection != null) {
-				connection.disconnect();
-			}
+			
+			disconnect(connection);
 		}
 	}
 
@@ -230,9 +250,8 @@ public class HttpClient {
 				} catch (IOException e) {
 				}
 			}
-			if (connection != null) {
-				connection.disconnect();
-			}
+
+			disconnect(connection);
 		}
 	}
 

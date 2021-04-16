@@ -4,6 +4,7 @@
 
 package io.netty.tcp.server;
 
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -46,7 +47,7 @@ public class TcpServer {
 
 	private int readTimeout = 0;
 
-	private static int DEFAULT_READTIMEOUT = 10;
+	private static int DEFAULT_READTIMEOUT = 30;
 
 	private int writeTimeout = 0;
 
@@ -81,8 +82,6 @@ public class TcpServer {
 	private EventLoopGroup bossGroup = null;
 
 	private EventLoopGroup workerGroup = null;
-
-	// private TcpMessageHandler serverMessageHandler = null;
 
 	private Thread listenThrd = null;
 
@@ -288,9 +287,9 @@ public class TcpServer {
 		if (null != System.getProperty(PROP_BOSSTHREDS))
 			this.maxBossThreads = CommUtil.toInt(System.getProperty(PROP_BOSSTHREDS), 1);
 		if (null != System.getProperty(PROP_NIOTHREDS))
-			this.maxNioThreads = CommUtil.toInt(System.getProperty(PROP_NIOTHREDS), Runtime.getRuntime().availableProcessors() * 2);
+			this.maxNioThreads = CommUtil.toInt(System.getProperty(PROP_NIOTHREDS), Runtime.getRuntime().availableProcessors());
 		if (null != System.getProperty(PROP_SERVICETHREDS))
-			this.maxServiceThreads = CommUtil.toInt(System.getProperty(PROP_SERVICETHREDS), Runtime.getRuntime().availableProcessors());
+			this.maxServiceThreads = CommUtil.toInt(System.getProperty(PROP_SERVICETHREDS), Runtime.getRuntime().availableProcessors() * 2);
 	}
 
 	public void bind(int port) throws Exception {
@@ -313,11 +312,12 @@ public class TcpServer {
 		if (logger.isDebugEnabled()) {
 			logger.debug("TcpServer.name : {}", name);
 			logger.debug("TcpServer.port : {}", port);
+			logger.debug("TcpServer.timeout : {}", timeout);
 			logger.debug("TcpServer.readTimeout : {}", readTimeout);
 			logger.debug("TcpServer.writeTimeout : {}", writeTimeout);
-			logger.debug("TcpServer.SO_BACKLOG : {}", backlog);
-			logger.debug("TcpServer.maxBossThreads : {}", maxBossThreads);
-			logger.debug("TcpServer.maxNioThreads : {}", maxNioThreads);
+			logger.debug("TcpServer.so_backlog : {}", backlog);
+			logger.debug("TcpServer.maxBossThreads : {} {}", maxBossThreads, maxBossThreads == 0 ? "(will use default setting)" : "");
+			logger.debug("TcpServer.maxNioThreads : {} {}", maxNioThreads, maxNioThreads == 0 ? "(will use default setting)" : "");
 			logger.debug("TcpServer.maxServiceThreads : {}", maxServiceThreads);
 			logger.debug("TcpServer.messageDecoder : {}", messageDecoder);
 			logger.debug("TcpServer.messageEncoder : {}", messageEncoder);
@@ -333,12 +333,22 @@ public class TcpServer {
 			workerGroup = new NioEventLoopGroup();
 		try {
 			ServerBootstrap serverBootstrap = new ServerBootstrap();
-			serverBootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).option(ChannelOption.SO_REUSEADDR, true)
-			        .option(ChannelOption.SO_BACKLOG, backlog).option(ChannelOption.SO_KEEPALIVE, true).option(ChannelOption.TCP_NODELAY, true)
-			        .option(ChannelOption.ALLOW_HALF_CLOSURE, true).option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-			        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT).childHandler(new ChannelInitializer<SocketChannel>() {
+			serverBootstrap.group(bossGroup, workerGroup).
+				channel(NioServerSocketChannel.class)
+				.option(ChannelOption.SO_REUSEADDR, true)	// 端口复用
+				.option(ChannelOption.SO_BACKLOG, backlog)	//最大并发连接数
+				//.option(ChannelOption.SO_KEEPALIVE, true)	//是否保持长连接,可发送keep-alive包
+				//.option(ChannelOption.TCP_NODELAY, true)	//是否允许延迟组包发送
+				//.option(ChannelOption.ALLOW_HALF_CLOSURE, true)	//是否允许半关闭状态,主要用于server可继续发送数据,client不能发送数据
+				.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)	//零拷贝
+				.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)	//零拷贝
+				.childHandler(new ChannelInitializer<SocketChannel>() {
 				        @Override
 				        public void initChannel(SocketChannel ch) throws Exception {
+				        	if (isDebug() && logger.isDebugEnabled()) {
+				        			logger.debug("{} accepted.", ch);
+				        	}
+				        	
 					        if (readTimeout > 0)
 						        ch.pipeline().addLast(new ReadTimeoutHandler(readTimeout));
 					        if (writeTimeout > 0)
@@ -354,7 +364,7 @@ public class TcpServer {
 			ChannelFuture channelFuture = serverBootstrap.bind(port).syncUninterruptibly().addListener(future -> {
 				logger.info("Tcp Server '{}' on port {} started.", name, port);
 			});
-			channelFuture.channel().closeFuture().sync().addListener(future -> {
+			channelFuture.channel().closeFuture().syncUninterruptibly().addListener(future -> {
 				logger.info("Tcp Server '{}' on port {} shutdown ......", name, port);
 			});
 		} finally {
@@ -363,30 +373,21 @@ public class TcpServer {
 	}
 
 	public void start() throws Exception {
-		if (daemon) {
-			listenThrd = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					Thread.currentThread().setName(name);
-					try {
-						bind(port);
-					} catch (Exception e) {
-						logger.error("{} started on port {} Exception : {}", name, port, e);
-						e.printStackTrace();
-					}
+		listenThrd = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				Thread.currentThread().setName(name);
+				try {
+					bind(port);
+				} catch (Exception e) {
+					logger.error("{} bind on port {} failed.", name, port, e);
 				}
-
-			});
-			listenThrd.setDaemon(true);
-			listenThrd.start();
-		} else {
-			try {
-				bind(port);
-			} catch (Exception e) {
-				logger.error("{} started on port {} Exception : {}", name, port, e);
-				e.printStackTrace();
 			}
+		});
+		if (daemon) {
+			listenThrd.setDaemon(true);
 		}
+		listenThrd.start();
 	}
 
 	public void stop() throws Exception {
