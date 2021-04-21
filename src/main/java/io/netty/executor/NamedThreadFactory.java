@@ -1,10 +1,8 @@
 /**
- * netty-tcp.
- * Copyright (C) 1999-2017, All rights reserved.
- *
- * This program and the accompanying materials are under the terms of the Apache License Version 2.0.
+ * netty-tcp. Copyright (C) 1999-2017, All rights reserved. This program and the accompanying materials are under the terms of the Apache License Version 2.0.
  */
-package io.netty.tcp.server;
+
+package io.netty.executor;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,7 +24,7 @@ public class NamedThreadFactory implements ThreadFactory {
 	private String namePrefix = "";
 
 	public NamedThreadFactory(String namePrefix) {
-		this.namePrefix = namePrefix;
+		this.namePrefix = namePrefix + (namePrefix.endsWith("-") ? "" : "-");
 	}
 
 	public Thread newThread(Runnable runnable) {
@@ -40,7 +38,7 @@ public class NamedThreadFactory implements ThreadFactory {
 				}
 			}
 		}
-		String n = this.namePrefix + "-" + ai.getAndIncrement();
+		String n = this.namePrefix + ai.getAndIncrement();
 		// logger.info("newThread {}", n);
 		Thread t = new Thread(runnable, n);
 		if (t.isDaemon())

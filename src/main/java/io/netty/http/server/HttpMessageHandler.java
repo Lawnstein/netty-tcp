@@ -15,7 +15,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +24,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.executor.ThreadPoolServiceExecutor;
 import io.netty.handler.ServiceAppHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -33,7 +33,6 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutException;
 import io.netty.tcp.message.HeartBeatMessage;
-import io.netty.tcp.server.NamedThreadFactory;
 
 /**
  * http channel处理.
@@ -158,7 +157,8 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 				// new LinkedBlockingQueue<Runnable>());
 
 				// excutor = Executors.newFixedThreadPool(maxServiceThreads);
-				excutor = Executors.newFixedThreadPool(maxServiceThreads, new NamedThreadFactory(name));
+				// excutor = Executors.newFixedThreadPool(maxServiceThreads, new NamedThreadFactory(name));
+				excutor = new ThreadPoolServiceExecutor(minServiceThreads, maxServiceThreads, name);
 				threadPoolMap.put(name, excutor);
 			}
 		}
@@ -300,7 +300,8 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 								logger.debug("{} Write to Channel with response message : ({}){}, is short connection ? {}.", ctx, responseBody
 								        .getClass(), (responseBody instanceof byte[]) ? new String((byte[]) responseBody) : responseBody, shortConnection);
 
-							byte[] responseBodyBytes = (responseBody instanceof byte[]) ? (byte[]) responseBody : responseBody.toString().getBytes(contentEncoding);
+							byte[] responseBodyBytes = (responseBody instanceof byte[]) ? (byte[]) responseBody : responseBody.toString()
+							        .getBytes(contentEncoding);
 							FullHttpResponse response = new DefaultFullHttpResponse(protocalVersion, OK, Unpooled.wrappedBuffer(responseBodyBytes));
 							response.headers().set(CONTENT_TYPE, contentType);
 							response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
