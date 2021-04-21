@@ -4,7 +4,7 @@
 
 package io.netty.tcp.server;
 
-import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -65,6 +65,11 @@ public class TcpServer {
 
 	private int maxServiceThreads = Runtime.getRuntime().availableProcessors() * 2;
 
+	/**
+	 * 设置了serviceThreadPool后，上述minServiceThreads、maxServiceThreads无效:无需自动创建了.
+	 */
+	private ExecutorService serviceThreadPool;
+	
 	private int threadKeepAliveSeconds = 0;
 
 	private boolean shortConnection = false;
@@ -188,6 +193,14 @@ public class TcpServer {
 			this.maxServiceThreads = maxServiceThreads;
 	}
 
+	public ExecutorService getServiceThreadPool() {
+		return serviceThreadPool;
+	}
+
+	public void setServiceThreadPool(ExecutorService serviceThreadPool) {
+		this.serviceThreadPool = serviceThreadPool;
+	}
+	
 	public int getThreadKeepAliveSeconds() {
 		return threadKeepAliveSeconds;
 	}
@@ -266,6 +279,7 @@ public class TcpServer {
 		handler.setDebug(debug);
 		handler.setMinServiceThreads(getMinServiceThreads());
 		handler.setMaxServiceThreads(getMaxServiceThreads());
+		handler.setServiceThreadPool(getServiceThreadPool());
 		handler.setThreadKeepAliveSeconds(getThreadKeepAliveSeconds());
 		handler.setShortConnection(isShortConnection());
 		handler.setMessageDecoder(getMessageDecoder());

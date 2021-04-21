@@ -12,7 +12,6 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
@@ -55,10 +54,12 @@ public class TcpMessageHandler extends ChannelInboundHandlerAdapter {
 
 	private int maxServiceThreads = 0;
 
+	private ExecutorService serviceThreadPool;
+
 	private int threadKeepAliveSeconds = 0;
 
 	private boolean shortConnection = false;
-
+	
 	/**
 	 * 升级成Akka？
 	 */
@@ -141,7 +142,18 @@ public class TcpMessageHandler extends ChannelInboundHandlerAdapter {
 		this.threadKeepAliveSeconds = threadKeepAliveSeconds;
 	}
 
+	public ExecutorService getServiceThreadPool() {
+		return serviceThreadPool;
+	}
+
+	public void setServiceThreadPool(ExecutorService serviceThreadPool) {
+		this.serviceThreadPool = serviceThreadPool;
+	}
+
 	public ExecutorService getExcutorThread() {
+		if (this.serviceThreadPool != null) {
+			return this.serviceThreadPool;
+		}
 
 		if (threadPoolMap.containsKey(name))
 			return threadPoolMap.get(name);

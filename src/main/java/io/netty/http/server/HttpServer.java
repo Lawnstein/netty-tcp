@@ -4,7 +4,7 @@
 
 package io.netty.http.server;
 
-import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -64,6 +64,11 @@ public class HttpServer {
 	private int minServiceThreads = 0;
 
 	private int maxServiceThreads = Runtime.getRuntime().availableProcessors() * 2;
+
+	/**
+	 * 设置了serviceThreadPool后，上述minServiceThreads、maxServiceThreads无效:无需自动创建了.
+	 */
+	private ExecutorService serviceThreadPool;
 
 	private String websocketPath = null;
 	
@@ -186,6 +191,14 @@ public class HttpServer {
 			this.maxServiceThreads = maxServiceThreads;
 	}
 
+	public ExecutorService getServiceThreadPool() {
+		return serviceThreadPool;
+	}
+
+	public void setServiceThreadPool(ExecutorService serviceThreadPool) {
+		this.serviceThreadPool = serviceThreadPool;
+	}
+
 	public int getThreadKeepAliveSeconds() {
 		return threadKeepAliveSeconds;
 	}
@@ -272,6 +285,7 @@ public class HttpServer {
 		handler.setDebug(debug);
 		handler.setMinServiceThreads(getMinServiceThreads());
 		handler.setMaxServiceThreads(getMaxServiceThreads());
+		handler.setServiceThreadPool(getServiceThreadPool());
 		handler.setThreadKeepAliveSeconds(getThreadKeepAliveSeconds());
 		handler.setShortConnection(isShortConnection());
 		return handler;

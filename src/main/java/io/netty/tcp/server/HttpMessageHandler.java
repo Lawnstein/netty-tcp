@@ -2,7 +2,7 @@
  * netty-tcp. Copyright (C) 1999-2017, All rights reserved. This program and the accompanying materials are under the terms of the Apache License Version 2.0.
  */
 
-package io.netty.http.server;
+package io.netty.tcp.server;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_ENCODING;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
@@ -34,6 +34,8 @@ import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutException;
 import io.netty.tcp.message.HeartBeatMessage;
 import io.netty.tcp.server.NamedThreadFactory;
+// import io.netty.tcp.server.ServiceAppHandler;
+import io.netty.tcp.util.ExceptionUtil;
 
 /**
  * http channel处理.
@@ -59,11 +61,11 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 
 	private int maxServiceThreads = 0;
 
-	private ExecutorService serviceThreadPool;
-
 	private int threadKeepAliveSeconds = 0;
 
 	private boolean shortConnection = false;
+
+	private ExecutorService serviceThreadPool;
 
 	/**
 	 * 升级成Akka？
