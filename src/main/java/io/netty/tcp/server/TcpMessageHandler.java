@@ -7,17 +7,15 @@ package io.netty.tcp.server;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
-import io.netty.executor.NamedThreadFactory;
-import io.netty.executor.ThreadPoolServiceExecutor;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.executor.ThreadPoolServiceExecutor;
 import io.netty.handler.ServiceAppHandler;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.timeout.WriteTimeoutException;
@@ -88,14 +86,6 @@ public class TcpMessageHandler extends ChannelInboundHandlerAdapter {
 		this.messageEncoder = messageEncoder;
 	}
 
-	public int getMaxServiceThreads() {
-		return maxServiceThreads;
-	}
-
-	public void setMaxServiceThreads(int maxServiceThreads) {
-		this.maxServiceThreads = maxServiceThreads;
-	}
-
 	public boolean isShortConnection() {
 		return shortConnection;
 	}
@@ -136,12 +126,12 @@ public class TcpMessageHandler extends ChannelInboundHandlerAdapter {
 		this.minServiceThreads = minServiceThreads;
 	}
 
-	public int getThreadKeepAliveSeconds() {
-		return threadKeepAliveSeconds;
+	public int getMaxServiceThreads() {
+		return maxServiceThreads;
 	}
 
-	public void setThreadKeepAliveSeconds(int threadKeepAliveSeconds) {
-		this.threadKeepAliveSeconds = threadKeepAliveSeconds;
+	public void setMaxServiceThreads(int maxServiceThreads) {
+		this.maxServiceThreads = maxServiceThreads;
 	}
 
 	public ExecutorService getServiceThreadPool() {
@@ -152,30 +142,39 @@ public class TcpMessageHandler extends ChannelInboundHandlerAdapter {
 		this.serviceThreadPool = serviceThreadPool;
 	}
 
+	public int getThreadKeepAliveSeconds() {
+		return threadKeepAliveSeconds;
+	}
+
+	public void setThreadKeepAliveSeconds(int threadKeepAliveSeconds) {
+		this.threadKeepAliveSeconds = threadKeepAliveSeconds;
+	}
+
 	public ExecutorService getExcutorThread() {
 		if (this.serviceThreadPool != null) {
 			return this.serviceThreadPool;
 		}
 
-		if (threadPoolMap.containsKey(name))
+		if (threadPoolMap.containsKey(name)) {
 			return threadPoolMap.get(name);
+		}
+
+		if (this.minServiceThreads == 0 && this.maxServiceThreads == 0) {
+			return null;
+		}
 
 		ExecutorService excutor = null;
 		synchronized (threadPoolMap) {
 			if (threadPoolMap.containsKey(name))
 				excutor = threadPoolMap.get(name);
 			else {
-				// excutor = new ThreadPoolExecutor(this.minServiceThreads,
-				// this.maxServiceThreads, threadKeepAliveSeconds,
-				// TimeUnit.SECONDS,
-				// new LinkedBlockingQueue<Runnable>());
-
 				// excutor = Executors.newFixedThreadPool(maxServiceThreads);
 				// excutor = Executors.newFixedThreadPool(maxServiceThreads, new NamedThreadFactory(name));
 				excutor = new ThreadPoolServiceExecutor(minServiceThreads, maxServiceThreads, name);
 				threadPoolMap.put(name, excutor);
 			}
 		}
+
 		return excutor;
 	}
 
@@ -295,12 +294,9 @@ public class TcpMessageHandler extends ChannelInboundHandlerAdapter {
 			return;
 		}
 
-		getExcutorThread().execute(new Runnable() {
-
+		Runnable runner = new Runnable() {
 			public void run() {
-
 				try {
-
 					if (isDebug() && logger.isDebugEnabled())
 						logger.debug("{} proccess in thread {} ", ctx, Thread.currentThread());
 
@@ -325,7 +321,14 @@ public class TcpMessageHandler extends ChannelInboundHandlerAdapter {
 					throw th;
 				}
 			}
-		});
+		};
+
+		ExecutorService es = getExcutorThread();
+		if (es != null) {
+			es.execute(runner);
+		} else {
+			runner.run();
+		}
 
 	}
 

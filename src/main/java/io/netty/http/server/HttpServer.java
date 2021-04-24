@@ -19,6 +19,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.executor.NamedThreadFactory;
 import io.netty.handler.ServiceAppHandler;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
@@ -57,23 +58,24 @@ public class HttpServer {
 
 	private int backlog = 10240;
 
-	private int maxBossThreads = 0;
+	private int maxBossThreads = 2;
 
-	private int maxNioThreads = 0;
+	private int maxNioThreads = Runtime.getRuntime().availableProcessors();
 
 	private int minServiceThreads = 0;
 
-	private int maxServiceThreads = Runtime.getRuntime().availableProcessors() * 2;
+	private int maxServiceThreads = 0;
+
+	private int threadKeepAliveSeconds = 0;
 
 	/**
-	 * 设置了serviceThreadPool后，上述minServiceThreads、maxServiceThreads无效:无需自动创建了.
+	 * 设置了serviceThreadPool后，上述minServiceThreads、maxServiceThreads无效:无需自动创建了.<br>
+	 * 当minServiceThreads、maxServiceThreads、serviceThreadPool均不配置时，则不再开启服务线程池，而采用Nio线程池.<br>
 	 */
 	private ExecutorService serviceThreadPool;
 
 	private String websocketPath = null;
 	
-	private int threadKeepAliveSeconds = 0;
-
 	private boolean shortConnection = false;
 
 	private boolean daemon = true;
@@ -191,20 +193,20 @@ public class HttpServer {
 			this.maxServiceThreads = maxServiceThreads;
 	}
 
-	public ExecutorService getServiceThreadPool() {
-		return serviceThreadPool;
-	}
-
-	public void setServiceThreadPool(ExecutorService serviceThreadPool) {
-		this.serviceThreadPool = serviceThreadPool;
-	}
-
 	public int getThreadKeepAliveSeconds() {
 		return threadKeepAliveSeconds;
 	}
 
 	public void setThreadKeepAliveSeconds(int threadKeepAliveSeconds) {
 		this.threadKeepAliveSeconds = threadKeepAliveSeconds;
+	}
+
+	public ExecutorService getServiceThreadPool() {
+		return serviceThreadPool;
+	}
+
+	public void setServiceThreadPool(ExecutorService serviceThreadPool) {
+		this.serviceThreadPool = serviceThreadPool;
 	}
 
 	public String getWebsocketPath() {
@@ -325,23 +327,27 @@ public class HttpServer {
 			logger.debug("HttpServer.maxServiceThreads : {}", maxServiceThreads);
 		}
 
-		if (maxBossThreads > 0)
-			bossGroup = new NioEventLoopGroup(maxBossThreads);
-		else
+		if (maxBossThreads > 0) {
+			bossGroup = new NioEventLoopGroup(maxBossThreads, new NamedThreadFactory(name+"-boss"));
+		} else {
 			bossGroup = new NioEventLoopGroup();
-		if (maxNioThreads > 0)
-			workerGroup = new NioEventLoopGroup(maxNioThreads);
-		else
+		}
+		if (maxNioThreads > 0) {
+			workerGroup = new NioEventLoopGroup(maxNioThreads, new NamedThreadFactory(name+"-worker"));
+		} else {
 			workerGroup = new NioEventLoopGroup();
+		}
 		try {
 			ServerBootstrap serverBootstrap = new ServerBootstrap();
 			serverBootstrap.group(bossGroup, workerGroup)
 			.channel(NioServerSocketChannel.class)
 			.option(ChannelOption.SO_REUSEADDR, true)	// 端口复用
 			.option(ChannelOption.SO_BACKLOG, backlog)	//最大并发连接数
-			//.option(ChannelOption.SO_KEEPALIVE, true)	//是否保持长连接,可发送keep-alive包
-			//.option(ChannelOption.TCP_NODELAY, true)	//是否允许延迟组包发送
-			//.option(ChannelOption.ALLOW_HALF_CLOSURE, true)	//是否允许半关闭状态,主要用于server可继续发送数据,client不能发送数据
+			.option(ChannelOption.SO_KEEPALIVE, true)	//是否保持长连接,可发送keep-alive包
+			.option(ChannelOption.TCP_NODELAY, true)	//是否允许延迟组包发送
+			.option(ChannelOption.SO_RCVBUF, 256 * 1024)	//设置接收缓冲区大小
+			.option(ChannelOption.SO_SNDBUF, 256 * 1024)	//设置发送缓冲区大小
+			.option(ChannelOption.ALLOW_HALF_CLOSURE, true)	//是否允许半关闭状态,主要用于server可继续发送数据,client不能发送数据
 			.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)	//零拷贝
 			.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)	//零拷贝
 			.childHandler(new ChannelInitializer<SocketChannel>() {

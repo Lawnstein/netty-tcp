@@ -74,14 +74,6 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 		this.serviceHandler = serviceHandler;
 	}
 
-	public int getMaxServiceThreads() {
-		return maxServiceThreads;
-	}
-
-	public void setMaxServiceThreads(int maxServiceThreads) {
-		this.maxServiceThreads = maxServiceThreads;
-	}
-
 	public boolean isShortConnection() {
 		return shortConnection;
 	}
@@ -122,12 +114,12 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 		this.minServiceThreads = minServiceThreads;
 	}
 
-	public int getThreadKeepAliveSeconds() {
-		return threadKeepAliveSeconds;
+	public int getMaxServiceThreads() {
+		return maxServiceThreads;
 	}
 
-	public void setThreadKeepAliveSeconds(int threadKeepAliveSeconds) {
-		this.threadKeepAliveSeconds = threadKeepAliveSeconds;
+	public void setMaxServiceThreads(int maxServiceThreads) {
+		this.maxServiceThreads = maxServiceThreads;
 	}
 
 	public ExecutorService getServiceThreadPool() {
@@ -138,6 +130,14 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 		this.serviceThreadPool = serviceThreadPool;
 	}
 
+	public int getThreadKeepAliveSeconds() {
+		return threadKeepAliveSeconds;
+	}
+
+	public void setThreadKeepAliveSeconds(int threadKeepAliveSeconds) {
+		this.threadKeepAliveSeconds = threadKeepAliveSeconds;
+	}
+
 	public ExecutorService getExcutorThread() {
 		if (this.serviceThreadPool != null) {
 			return this.serviceThreadPool;
@@ -146,22 +146,22 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 		if (threadPoolMap.containsKey(name))
 			return threadPoolMap.get(name);
 
+		if (this.minServiceThreads == 0 && this.maxServiceThreads == 0) {
+			return null;
+		}
+
 		ExecutorService excutor = null;
 		synchronized (threadPoolMap) {
 			if (threadPoolMap.containsKey(name))
 				excutor = threadPoolMap.get(name);
 			else {
-				// excutor = new ThreadPoolExecutor(this.minServiceThreads,
-				// this.maxServiceThreads, threadKeepAliveSeconds,
-				// TimeUnit.SECONDS,
-				// new LinkedBlockingQueue<Runnable>());
-
 				// excutor = Executors.newFixedThreadPool(maxServiceThreads);
 				// excutor = Executors.newFixedThreadPool(maxServiceThreads, new NamedThreadFactory(name));
 				excutor = new ThreadPoolServiceExecutor(minServiceThreads, maxServiceThreads, name);
 				threadPoolMap.put(name, excutor);
 			}
 		}
+
 		return excutor;
 	}
 
@@ -279,11 +279,9 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 				return;
 			}
 
-			getExcutorThread().execute(new Runnable() {
+			Runnable runner = new Runnable() {
 				public void run() {
-
 					try {
-
 						if (isDebug() && logger.isDebugEnabled()) {
 							logger.debug("{} proccess in thread {} ", ctx, Thread.currentThread());
 							logger.debug("FullHttpRequest.protocolVersion={}", request.protocolVersion());
@@ -321,7 +319,15 @@ public class HttpMessageHandler extends ChannelInboundHandlerAdapter {
 						errorResponse(ctx, thr);
 					}
 				}
-			});
+			};
+
+			ExecutorService es = getExcutorThread();
+			if (es != null) {
+				es.execute(runner);
+			} else {
+				runner.run();
+			}
+			
 		} catch (Throwable thr) {
 			errorResponse(ctx, thr);
 		}
