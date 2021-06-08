@@ -1,8 +1,8 @@
 /**
- * netty-tcp.
- * Copyright (C) 1999-2017, All rights reserved.
- *
- * This program and the accompanying materials are under the terms of the Apache License Version 2.0.
+ * netty-tcp. <br>
+ * Copyright (C) 1999-2017, All rights reserved. <br>
+ * <br>
+ * This program and the accompanying materials are under the terms of the Apache License Version 2.0. <br>
  */
 package io.netty.tcp.client;
 

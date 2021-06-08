@@ -1,9 +1,10 @@
 /**
- * netty-tcp.
- * Copyright (C) 1999-2017, All rights reserved.
- *
- * This program and the accompanying materials are under the terms of the Apache License Version 2.0.
+ * netty-tcp. <br>
+ * Copyright (C) 1999-2017, All rights reserved. <br>
+ * <br>
+ * This program and the accompanying materials are under the terms of the Apache License Version 2.0. <br>
  */
+
 package io.netty.tcp.util;
 
 import java.io.ByteArrayInputStream;
@@ -61,16 +62,11 @@ public class CommUtil {
 	}
 
 	public static long bytesToLong(byte[] array) {
-		return ((((long) array[0] & 0xff) << 56) | (((long) array[1] & 0xff) << 48) | (((long) array[2] & 0xff) << 40)
-				| (((long) array[3] & 0xff) << 32) | (((long) array[4] & 0xff) << 24) | (((long) array[5] & 0xff) << 16)
-				| (((long) array[6] & 0xff) << 8) | (((long) array[7] & 0xff) << 0));
+		return ((((long) array[0] & 0xff) << 56) | (((long) array[1] & 0xff) << 48) | (((long) array[2] & 0xff) << 40) | (((long) array[3] & 0xff) << 32) | (((long) array[4] & 0xff) << 24) | (((long) array[5] & 0xff) << 16) | (((long) array[6] & 0xff) << 8) | (((long) array[7] & 0xff) << 0));
 	}
 
 	public static long bytesToLong(byte[] array, int offset) {
-		return ((((long) array[offset + 0] & 0xff) << 56) | (((long) array[offset + 1] & 0xff) << 48)
-				| (((long) array[offset + 2] & 0xff) << 40) | (((long) array[offset + 3] & 0xff) << 32)
-				| (((long) array[offset + 4] & 0xff) << 24) | (((long) array[offset + 5] & 0xff) << 16)
-				| (((long) array[offset + 6] & 0xff) << 8) | (((long) array[offset + 7] & 0xff) << 0));
+		return ((((long) array[offset + 0] & 0xff) << 56) | (((long) array[offset + 1] & 0xff) << 48) | (((long) array[offset + 2] & 0xff) << 40) | (((long) array[offset + 3] & 0xff) << 32) | (((long) array[offset + 4] & 0xff) << 24) | (((long) array[offset + 5] & 0xff) << 16) | (((long) array[offset + 6] & 0xff) << 8) | (((long) array[offset + 7] & 0xff) << 0));
 	}
 
 	public static byte[] intToBytes(int n) {
@@ -94,8 +90,7 @@ public class CommUtil {
 	}
 
 	public static int bytesToInt(byte b[], int offset) {
-		return b[offset + 3] & 0xff | (b[offset + 2] & 0xff) << 8 | (b[offset + 1] & 0xff) << 16
-				| (b[offset] & 0xff) << 24;
+		return b[offset + 3] & 0xff | (b[offset + 2] & 0xff) << 8 | (b[offset + 1] & 0xff) << 16 | (b[offset] & 0xff) << 24;
 	}
 
 	public static byte[] uintToBytes(long n) {
@@ -116,13 +111,11 @@ public class CommUtil {
 	}
 
 	public static long bytesToUint(byte[] array) {
-		return ((long) (array[3] & 0xff)) | ((long) (array[2] & 0xff)) << 8 | ((long) (array[1] & 0xff)) << 16
-				| ((long) (array[0] & 0xff)) << 24;
+		return ((long) (array[3] & 0xff)) | ((long) (array[2] & 0xff)) << 8 | ((long) (array[1] & 0xff)) << 16 | ((long) (array[0] & 0xff)) << 24;
 	}
 
 	public static long bytesToUint(byte[] array, int offset) {
-		return ((long) (array[offset + 3] & 0xff)) | ((long) (array[offset + 2] & 0xff)) << 8
-				| ((long) (array[offset + 1] & 0xff)) << 16 | ((long) (array[offset] & 0xff)) << 24;
+		return ((long) (array[offset + 3] & 0xff)) | ((long) (array[offset + 2] & 0xff)) << 8 | ((long) (array[offset + 1] & 0xff)) << 16 | ((long) (array[offset] & 0xff)) << 24;
 	}
 
 	public static byte[] shortToBytes(short n) {
@@ -186,8 +179,7 @@ public class CommUtil {
 	/**
 	 * 组成字符串方法
 	 * 
-	 * @param args
-	 *            变参
+	 * @param args 变参
 	 * @return String
 	 */
 	public static BigDecimal toBigDecimal(Object value) {
@@ -217,8 +209,7 @@ public class CommUtil {
 	/**
 	 * 转换成Integer
 	 * 
-	 * @param args
-	 *            value
+	 * @param args value
 	 * @return Integer
 	 */
 	public static Integer toInteger(Object value) {
@@ -239,8 +230,7 @@ public class CommUtil {
 	/**
 	 * BigDecimal转换成Long, 如果BigDecimal包含有效小数位，则会报错。
 	 * 
-	 * @param args
-	 *            value
+	 * @param args value
 	 * @return Long
 	 */
 	public static Long toLong(BigDecimal value) {
@@ -253,8 +243,7 @@ public class CommUtil {
 	/**
 	 * 转换成Long
 	 * 
-	 * @param args
-	 *            value
+	 * @param args value
 	 * @return Long
 	 */
 	public static Long toLong(Object value) {
@@ -275,8 +264,7 @@ public class CommUtil {
 	/**
 	 * 转换成Boolean
 	 * 
-	 * @param args
-	 *            value
+	 * @param args value
 	 * @return boolean
 	 */
 	public final static boolean toBoolean(String str) {
@@ -286,8 +274,7 @@ public class CommUtil {
 	/**
 	 * 转换成Boolean,为空时赋值缺省值.
 	 * 
-	 * @param args
-	 *            value
+	 * @param args value
 	 * @return boolean
 	 */
 	public final static boolean toBoolean(String str, boolean defaultValue) {
@@ -301,8 +288,7 @@ public class CommUtil {
 	/**
 	 * 转换成int.
 	 * 
-	 * @param args
-	 *            str
+	 * @param args str
 	 * @return int
 	 */
 	public static final int toInt(String str) {
@@ -312,10 +298,8 @@ public class CommUtil {
 	/**
 	 * 转换成int,为空则赋缺省值.
 	 * 
-	 * @param args
-	 *            str
-	 * @param args
-	 *            defaultValue
+	 * @param args str
+	 * @param args defaultValue
 	 * @return int
 	 */
 	public static final int toInt(String str, int defaultValue) {

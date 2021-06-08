@@ -1,9 +1,10 @@
 /**
- * netty-tcp.
- * Copyright (C) 1999-2017, All rights reserved.
- *
- * This program and the accompanying materials are under the terms of the Apache License Version 2.0.
+ * netty-tcp. <br>
+ * Copyright (C) 1999-2017, All rights reserved. <br>
+ * <br>
+ * This program and the accompanying materials are under the terms of the Apache License Version 2.0. <br>
  */
+
 package io.netty.tcp.message.handler.coding;
 
 import java.util.List;
@@ -58,21 +59,21 @@ public abstract class AbstractFixedLengthHeaderByteMsgDecoder extends ByteToMess
 
 	private void resetHeaderLengthSize(int headerLengthSize) {
 		switch (this.headLengthType) {
-		case SHORT:
-			this.headerLengthSize = CommUtil.SHORT_BYTES_LENGTH;
-			break;
+			case SHORT:
+				this.headerLengthSize = CommUtil.SHORT_BYTES_LENGTH;
+				break;
 
-		case INT:
-			this.headerLengthSize = CommUtil.INT_BYTES_LENGTH;
-			break;
+			case INT:
+				this.headerLengthSize = CommUtil.INT_BYTES_LENGTH;
+				break;
 
-		case LONG:
-			this.headerLengthSize = CommUtil.LONG_BYTES_LENGTH;
-			break;
+			case LONG:
+				this.headerLengthSize = CommUtil.LONG_BYTES_LENGTH;
+				break;
 
-		default:
-			this.headerLengthSize = headerLengthSize;
-			break;
+			default:
+				this.headerLengthSize = headerLengthSize;
+				break;
 		}
 	}
 
@@ -119,8 +120,7 @@ public abstract class AbstractFixedLengthHeaderByteMsgDecoder extends ByteToMess
 		int readableLen = in.readableBytes();
 		if (readableLen < this.headerLengthSize) {
 			if (TcpServer.isDebug() && logger.isTraceEnabled())
-				logger.trace("decode recv not enough head, expect {}, readableBytes length {}, wait.",
-						this.headerLengthSize, readableLen);
+				logger.trace("decode recv not enough head, expect {}, readableBytes length {}, wait.", this.headerLengthSize, readableLen);
 			return;
 		}
 		in.markReaderIndex();
@@ -146,8 +146,7 @@ public abstract class AbstractFixedLengthHeaderByteMsgDecoder extends ByteToMess
 			in.resetReaderIndex();
 
 			if (TcpServer.isDebug() && logger.isTraceEnabled())
-				logger.trace("{} decode recv not enough body, expected {}, readableBytes length {}, wait.", this,
-						dataLength, readableLen);
+				logger.trace("{} decode recv not enough body, expected {}, readableBytes length {}, wait.", this, dataLength, readableLen);
 			return;
 		}
 
@@ -167,9 +166,7 @@ public abstract class AbstractFixedLengthHeaderByteMsgDecoder extends ByteToMess
 
 	@Override
 	public String toString() {
-		return "AbstractFixedLengthHeaderByteMsgDecoder [headLengthType=" + headLengthType + ", headerLengthSize="
-				+ headerLengthSize + ", headerLengthIncluded=" + headerLengthIncluded + ", lengthHeaderIncluded="
-				+ lengthHeaderIncluded + "]";
+		return "AbstractFixedLengthHeaderByteMsgDecoder [headLengthType=" + headLengthType + ", headerLengthSize=" + headerLengthSize + ", headerLengthIncluded=" + headerLengthIncluded + ", lengthHeaderIncluded=" + lengthHeaderIncluded + "]";
 	}
 
 }

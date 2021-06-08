@@ -4,7 +4,7 @@
  *
  * This program and the accompanying materials are under the terms of the Apache License Version 2.0.
  */
-package io.netty.tcp.socket;
+package io.netty.tcp.util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,11 +21,11 @@ import org.slf4j.LoggerFactory;
  * @author Lawnstein.Chan
  * @version $Revision:$
  */
-public class ClientSocket {
-	protected final static Logger logger = LoggerFactory.getLogger(ClientSocket.class);
+public class SocketUtil {
+	protected final static Logger logger = LoggerFactory.getLogger(SocketUtil.class);
 	public static final int GRANULARITY = 5;
 
-	public ClientSocket() {
+	public SocketUtil() {
 	}
 
 	/**

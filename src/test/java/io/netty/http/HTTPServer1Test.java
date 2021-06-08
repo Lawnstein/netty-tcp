@@ -18,7 +18,7 @@ import io.netty.http.server.HttpServer;
  */
 public class HTTPServer1Test {
 	protected final static Logger logger = LoggerFactory.getLogger(HTTPServer1Test.class);
-	public final static int PORT = 8071;
+	public final static int PORT = 19071;
 
 	public static void main(String[] args) {
 		HttpServer ts = new HttpServer();

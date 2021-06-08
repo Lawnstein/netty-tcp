@@ -1,9 +1,10 @@
 /**
- * netty-tcp.
- * Copyright (C) 1999-2017, All rights reserved.
- *
- * This program and the accompanying materials are under the terms of the Apache License Version 2.0.
+ * netty-tcp. <br>
+ * Copyright (C) 1999-2017, All rights reserved. <br>
+ * <br>
+ * This program and the accompanying materials are under the terms of the Apache License Version 2.0. <br>
  */
+
 package io.netty.tcp.message.handler.coding;
 
 import org.slf4j.Logger;
@@ -52,21 +53,21 @@ public abstract class AbstractFixedLengthHeaderByteMsgEncoder extends MessageToB
 
 	private void resetHeaderLengthSize(int headerLengthSize) {
 		switch (this.headLengthType) {
-		case SHORT:
-			this.headerLengthSize = CommUtil.SHORT_BYTES_LENGTH;
-			break;
+			case SHORT:
+				this.headerLengthSize = CommUtil.SHORT_BYTES_LENGTH;
+				break;
 
-		case INT:
-			this.headerLengthSize = CommUtil.INT_BYTES_LENGTH;
-			break;
+			case INT:
+				this.headerLengthSize = CommUtil.INT_BYTES_LENGTH;
+				break;
 
-		case LONG:
-			this.headerLengthSize = CommUtil.LONG_BYTES_LENGTH;
-			break;
+			case LONG:
+				this.headerLengthSize = CommUtil.LONG_BYTES_LENGTH;
+				break;
 
-		default:
-			this.headerLengthSize = headerLengthSize;
-			break;
+			default:
+				this.headerLengthSize = headerLengthSize;
+				break;
 		}
 	}
 
@@ -99,10 +100,10 @@ public abstract class AbstractFixedLengthHeaderByteMsgEncoder extends MessageToB
 
 	abstract public AbstractFixedLengthHeaderByteMsgEncoder clone();
 
-//	public static byte[] getHeadBytes(HeadLengthType headLengthType, int headerLengthSize, boolean headerLengthIncluded,
-//			byte[] body) {
-//		return headLengthType.toBytes(headerLengthSize, headerLengthIncluded, body == null ? 0 : body.length);
-//	}
+	// public static byte[] getHeadBytes(HeadLengthType headLengthType, int headerLengthSize, boolean headerLengthIncluded,
+	// byte[] body) {
+	// return headLengthType.toBytes(headerLengthSize, headerLengthIncluded, body == null ? 0 : body.length);
+	// }
 
 	@Override
 	protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
@@ -134,8 +135,7 @@ public abstract class AbstractFixedLengthHeaderByteMsgEncoder extends MessageToB
 
 	@Override
 	public String toString() {
-		return "AbstractFixedLengthHeaderByteMsgEncoder [headLengthType=" + headLengthType + ", headerLengthSize="
-				+ headerLengthSize + ", headerLengthIncluded=" + headerLengthIncluded + "]";
+		return "AbstractFixedLengthHeaderByteMsgEncoder [headLengthType=" + headLengthType + ", headerLengthSize=" + headerLengthSize + ", headerLengthIncluded=" + headerLengthIncluded + "]";
 	}
 
 }

@@ -1,9 +1,10 @@
 /**
- * netty-tcp.
- * Copyright (C) 1999-2017, All rights reserved.
- *
- * This program and the accompanying materials are under the terms of the Apache License Version 2.0.
+ * netty-tcp. <br>
+ * Copyright (C) 1999-2017, All rights reserved. <br>
+ * <br>
+ * This program and the accompanying materials are under the terms of the Apache License Version 2.0. <br>
  */
+
 package io.netty.tcp.serialiaztion;
 
 import java.io.ByteArrayInputStream;
@@ -38,8 +39,7 @@ public class JDKObjectSerializer implements ObjectSerializable {
 			byte[] target = bout.toByteArray();
 			return target;
 		} catch (IOException e) {
-			throw new RuntimeException(
-					"JDKMsgSerializer serialize " + (t == null ? "nvl" : t.getClass()) + " exception", e);
+			throw new RuntimeException("JDKMsgSerializer serialize " + (t == null ? "nvl" : t.getClass()) + " exception", e);
 		} finally {
 			if (out != null) {
 				try {
@@ -78,12 +78,12 @@ public class JDKObjectSerializer implements ObjectSerializable {
 	}
 
 	@Override
-	public byte[] serialize(Object t) {		
+	public byte[] serialize(Object t) {
 		return serializing(t);
 	}
 
 	@Override
-	public <T> T deserialize(byte[] bytes) {		
+	public <T> T deserialize(byte[] bytes) {
 		return deserializing(bytes);
 	}
 }

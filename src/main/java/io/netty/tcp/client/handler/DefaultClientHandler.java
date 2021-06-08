@@ -1,9 +1,10 @@
 /**
- * netty-tcp.
- * Copyright (C) 1999-2017, All rights reserved.
- *
- * This program and the accompanying materials are under the terms of the Apache License Version 2.0.
+ * netty-tcp. <br>
+ * Copyright (C) 1999-2017, All rights reserved. <br>
+ * <br>
+ * This program and the accompanying materials are under the terms of the Apache License Version 2.0. <br>
  */
+
 package io.netty.tcp.client.handler;
 
 import java.util.concurrent.BlockingQueue;
@@ -52,9 +53,7 @@ public class DefaultClientHandler implements ClientAppHandler {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * io.netty.tcp.netty.client.ClientAppHandler#activateChannel(io.netty.
-	 * channel.Channel)
+	 * @see io.netty.tcp.netty.client.ClientAppHandler#activateChannel(io.netty. channel.Channel)
 	 */
 	@Override
 	public void activateChannel(Channel channel) {
@@ -66,9 +65,7 @@ public class DefaultClientHandler implements ClientAppHandler {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * io.netty.tcp.netty.client.ClientAppHandler#recvResponse(java.lang.
-	 * Object)
+	 * @see io.netty.tcp.netty.client.ClientAppHandler#recvResponse(java.lang. Object)
 	 */
 	@Override
 	public void recvResponse(Object response) {
@@ -93,9 +90,7 @@ public class DefaultClientHandler implements ClientAppHandler {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * io.netty.tcp.netty.client.ClientAppHandler#onChannelClosed(io.netty.
-	 * channel.Channel)
+	 * @see io.netty.tcp.netty.client.ClientAppHandler#onChannelClosed(io.netty. channel.Channel)
 	 */
 	@Override
 	public void onChannelClosed(Channel channel) {
@@ -106,9 +101,7 @@ public class DefaultClientHandler implements ClientAppHandler {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * io.netty.tcp.netty.client.ClientAppHandler#onChannelException(io.
-	 * netty.channel.Channel, java.lang.Throwable)
+	 * @see io.netty.tcp.netty.client.ClientAppHandler#onChannelException(io. netty.channel.Channel, java.lang.Throwable)
 	 */
 	@Override
 	public void onChannelException(Channel channel, Throwable cause) {
@@ -117,8 +110,10 @@ public class DefaultClientHandler implements ClientAppHandler {
 	public void close() {
 		this.isAlive = false;
 		if (this.channel != null) {
-			if (this.channel.isActive()) this.channel.close();
-			if (this.channel.isOpen()) this.channel.close();
+			if (this.channel.isActive())
+				this.channel.close();
+			if (this.channel.isOpen())
+				this.channel.close();
 		}
 	}
 
@@ -173,6 +168,5 @@ public class DefaultClientHandler implements ClientAppHandler {
 		}
 		return rsp;
 	}
-
 
 }

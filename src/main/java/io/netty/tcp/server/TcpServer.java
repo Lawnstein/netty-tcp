@@ -1,5 +1,8 @@
 /**
- * netty-tcp. Copyright (C) 1999-2017, All rights reserved. This program and the accompanying materials are under the terms of the Apache License Version 2.0.
+ * netty-tcp. <br>
+ * Copyright (C) 1999-2017, All rights reserved. <br>
+ * <br>
+ * This program and the accompanying materials are under the terms of the Apache License Version 2.0. <br>
  */
 
 package io.netty.tcp.server;
@@ -73,7 +76,7 @@ public class TcpServer {
 	 * 当minServiceThreads、maxServiceThreads、serviceThreadPool均不配置时，则不再开启服务线程池，而采用Nio线程池.<br>
 	 */
 	private ExecutorService serviceThreadPool;
-	
+
 	private boolean shortConnection = false;
 
 	private boolean daemon = true;
@@ -210,7 +213,7 @@ public class TcpServer {
 	public void setServiceThreadPool(ExecutorService serviceThreadPool) {
 		this.serviceThreadPool = serviceThreadPool;
 	}
-	
+
 	public int getWorkerNumb() {
 		return maxServiceThreads;
 	}
@@ -339,37 +342,35 @@ public class TcpServer {
 			logger.debug("TcpServer.messageEncoder : {}", messageEncoder);
 		}
 
-		//EventLoopGroup默认的线程数是CPU核数的二倍
+		// EventLoopGroup默认的线程数是CPU核数的二倍
 		if (maxBossThreads > 0) {
-			bossGroup = new NioEventLoopGroup(maxBossThreads, new NamedThreadFactory(name+"-boss"));
+			bossGroup = new NioEventLoopGroup(maxBossThreads, new NamedThreadFactory(name + "-boss"));
 		} else {
 			bossGroup = new NioEventLoopGroup();
 		}
 		if (maxNioThreads > 0) {
-			workerGroup = new NioEventLoopGroup(maxNioThreads, new NamedThreadFactory(name+"-worker"));
+			workerGroup = new NioEventLoopGroup(maxNioThreads, new NamedThreadFactory(name + "-worker"));
 		} else {
 			workerGroup = new NioEventLoopGroup();
 		}
 		try {
 			ServerBootstrap serverBootstrap = new ServerBootstrap();
-			serverBootstrap.group(bossGroup, workerGroup).
-				channel(NioServerSocketChannel.class)
-				.option(ChannelOption.SO_REUSEADDR, true)	// 端口复用
-				.option(ChannelOption.SO_BACKLOG, backlog)	//最大并发连接数
-				.option(ChannelOption.SO_KEEPALIVE, true)	//是否保持长连接,可发送keep-alive包
-				.option(ChannelOption.TCP_NODELAY, true)	//是否允许延迟组包发送
-				.option(ChannelOption.SO_RCVBUF, 256 * 1024)	//设置接收缓冲区大小
-				.option(ChannelOption.SO_SNDBUF, 256 * 1024)	//设置发送缓冲区大小
-				.option(ChannelOption.ALLOW_HALF_CLOSURE, true)	//是否允许半关闭状态,主要用于server可继续发送数据,client不能发送数据
-				.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)	//零拷贝
-				.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)	//零拷贝
-				.childHandler(new ChannelInitializer<SocketChannel>() {
+			serverBootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).option(ChannelOption.SO_REUSEADDR, true) // 端口复用
+			        .option(ChannelOption.SO_BACKLOG, backlog) // 最大并发连接数
+			        .option(ChannelOption.SO_KEEPALIVE, true) // 是否保持长连接,可发送keep-alive包
+			        .option(ChannelOption.TCP_NODELAY, true) // 是否允许延迟组包发送
+			        .option(ChannelOption.SO_RCVBUF, 256 * 1024) // 设置接收缓冲区大小
+			        .option(ChannelOption.SO_SNDBUF, 256 * 1024) // 设置发送缓冲区大小
+			        .option(ChannelOption.ALLOW_HALF_CLOSURE, true) // 是否允许半关闭状态,主要用于server可继续发送数据,client不能发送数据
+			        .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) // 零拷贝
+			        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) // 零拷贝
+			        .childHandler(new ChannelInitializer<SocketChannel>() {
 				        @Override
 				        public void initChannel(SocketChannel ch) throws Exception {
-				        	if (isDebug() && logger.isDebugEnabled()) {
-				        			logger.debug("{} accepted.", ch);
-				        	}
-				        	
+					        if (isDebug() && logger.isDebugEnabled()) {
+						        logger.debug("{} accepted.", ch);
+					        }
+
 					        if (readTimeout > 0)
 						        ch.pipeline().addLast(new ReadTimeoutHandler(readTimeout));
 					        if (writeTimeout > 0)

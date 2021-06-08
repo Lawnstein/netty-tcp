@@ -1,9 +1,10 @@
 /**
- * netty-tcp.
- * Copyright (C) 1999-2017, All rights reserved.
- *
- * This program and the accompanying materials are under the terms of the Apache License Version 2.0.
+ * netty-tcp. <br>
+ * Copyright (C) 1999-2017, All rights reserved. <br>
+ * <br>
+ * This program and the accompanying materials are under the terms of the Apache License Version 2.0. <br>
  */
+
 package io.netty.tcp.client;
 
 import java.io.IOException;
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import io.netty.tcp.message.HeadLengthType;
 import io.netty.tcp.serialiaztion.KryoObjectSerializer;
 import io.netty.tcp.serialiaztion.ObjectSerializable;
-import io.netty.tcp.socket.ClientSocket;
+import io.netty.tcp.util.SocketUtil;
 
 /**
  * 客户端通讯调度处理.
@@ -96,7 +97,7 @@ public class TcpClient extends AbstractClient {
 		}
 
 		try {
-			sock = ClientSocket.connect(host, port, connectTimeout, readTimeout);
+			sock = SocketUtil.connect(host, port, connectTimeout, readTimeout);
 			alived = true;
 		} catch (Exception e) {
 			sock = null;
@@ -125,8 +126,7 @@ public class TcpClient extends AbstractClient {
 	/**
 	 * 同步调用-一请求一应答。
 	 * 
-	 * @param request
-	 *            请求对象（Map，List，Bean等）
+	 * @param request 请求对象（Map，List，Bean等）
 	 * @return response 应答对象（Map，List，Bean等）
 	 */
 	public Object call(Object request) {
@@ -144,10 +144,8 @@ public class TcpClient extends AbstractClient {
 			else
 				out = KryoObjectSerializer.serializing(request);
 			int osz = out == null ? 0 : out.length;
-			ClientSocket.write(sock,
-					this.headLengthType.toBytes(this.headLengthSize, isHeadLengthIncluded(), out.length), 0,
-					this.headLengthSize);
-			ClientSocket.write(sock, out, 0, osz);
+			SocketUtil.write(sock, this.headLengthType.toBytes(this.headLengthSize, isHeadLengthIncluded(), out.length), 0, this.headLengthSize);
+			SocketUtil.write(sock, out, 0, osz);
 			logger.trace("send request to {} over. Serialized request size {}", rhost, osz);
 		} catch (Exception e) {
 			logger.error("send request to {} failed:{}", rhost, e);
@@ -161,12 +159,11 @@ public class TcpClient extends AbstractClient {
 		 */
 		try {
 			byte[] le = new byte[this.headLengthSize];
-			int r = ClientSocket.read(sock, le, 0, headLengthSize,
-					readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
+			int r = SocketUtil.read(sock, le, 0, headLengthSize, readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
 			int isz = this.headLengthType.toLength(le);
 			logger.trace("recv response from {} expected size {}({})", rhost, isz, r);
 			byte[] ds = new byte[isz];
-			r = ClientSocket.read(sock, ds, 0, isz, readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
+			r = SocketUtil.read(sock, ds, 0, isz, readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
 			logger.trace("recv response from {} over. Serialized response size {}({})", rhost, isz, r);
 			if (this.objectSerializable != null)
 				response = objectSerializable.deserialize(ds);
@@ -190,8 +187,7 @@ public class TcpClient extends AbstractClient {
 	/**
 	 * 异步调用-发送.
 	 * 
-	 * @param request
-	 *            请求对象（Map，List，Bean等）
+	 * @param request 请求对象（Map，List，Bean等）
 	 * @return void
 	 */
 	public void send(final Object request) {
@@ -208,10 +204,8 @@ public class TcpClient extends AbstractClient {
 			else
 				out = KryoObjectSerializer.serializing(request);
 			int osz = out == null ? 0 : out.length;
-			ClientSocket.write(sock,
-					this.headLengthType.toBytes(this.headLengthSize, isHeadLengthIncluded(), out.length), 0,
-					this.headLengthSize);
-			ClientSocket.write(sock, out, 0, osz);
+			SocketUtil.write(sock, this.headLengthType.toBytes(this.headLengthSize, isHeadLengthIncluded(), out.length), 0, this.headLengthSize);
+			SocketUtil.write(sock, out, 0, osz);
 			logger.trace("send request to {} over. Serialized request size {}", rhost, osz);
 		} catch (Throwable e) {
 			logger.error("send request to {} failed:{}", rhost, e);
@@ -237,12 +231,11 @@ public class TcpClient extends AbstractClient {
 		Object response = null;
 		try {
 			byte[] le = new byte[this.headLengthSize];
-			int r = ClientSocket.read(sock, le, 0, headLengthSize,
-					readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
+			int r = SocketUtil.read(sock, le, 0, headLengthSize, readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
 			int isz = this.headLengthType.toLength(le);
 			logger.trace("recv response from {} expected size {}({})", rhost, isz, r);
 			byte[] ds = new byte[isz];
-			r = ClientSocket.read(sock, ds, 0, isz, readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
+			r = SocketUtil.read(sock, ds, 0, isz, readTimeout == 0 ? DEFAULT_READTIMEOUT : readTimeout);
 			logger.trace("recv response from {} over. Serialized response size {}({})", rhost, isz, r);
 			if (this.objectSerializable != null)
 				response = objectSerializable.deserialize(ds);
@@ -264,11 +257,7 @@ public class TcpClient extends AbstractClient {
 
 	@Override
 	public String toString() {
-		return "TcpClient [rhost=" + rhost + ", sock=" + sock + ", headLengthType=" + headLengthType
-				+ ", headLengthSize=" + headLengthSize + ", headLengthIncluded=" + headLengthIncluded
-				+ ", objectSerializable=" + objectSerializable + ", host=" + host + ", port=" + port + ", readTimeout="
-				+ readTimeout + ", writeTimeout=" + writeTimeout + ", connectTimeout=" + connectTimeout + ", timeout="
-				+ timeout + "]";
+		return "TcpClient [rhost=" + rhost + ", sock=" + sock + ", headLengthType=" + headLengthType + ", headLengthSize=" + headLengthSize + ", headLengthIncluded=" + headLengthIncluded + ", objectSerializable=" + objectSerializable + ", host=" + host + ", port=" + port + ", readTimeout=" + readTimeout + ", writeTimeout=" + writeTimeout + ", connectTimeout=" + connectTimeout + ", timeout=" + timeout + "]";
 	}
 
 }

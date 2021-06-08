@@ -1,6 +1,8 @@
-/*
- * Copyright 2005-2021 Client Service International, Inc. All rights reserved. <br> CSII PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.<br> <br>
- * project: netty-tcp <br> create: 2021年4月21日 下午3:16:54 <br> vc: $Id: $
+/**
+ * netty-tcp. <br>
+ * Copyright (C) 1999-2017, All rights reserved. <br>
+ * <br>
+ * This program and the accompanying materials are under the terms of the Apache License Version 2.0. <br>
  */
 
 package io.netty.executor;

@@ -10,7 +10,7 @@ import java.net.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.tcp.socket.ClientSocket;
+import io.netty.tcp.util.SocketUtil;
 
 /**
  * TODO 请填写注释.
@@ -23,7 +23,7 @@ public class TcpClient1Test {
 
 	public static void main(String[] args) {
 		try {
-			Socket s = ClientSocket.connect("127.0.0.1", TcpServer1Test.PORT);
+			Socket s = SocketUtil.connect("127.0.0.1", TcpServer1Test.PORT);
 
 			for (int i = 0; i < 10; i++) {
 				String body = "Request" + System.currentTimeMillis();
@@ -32,12 +32,12 @@ public class TcpClient1Test {
 				String packets = "00000000".substring(0, 8 - hls.length()) + hls + body;
 				byte[] packetBytes = packets.getBytes();
 				logger.debug("try to send {} ", packets);
-				ClientSocket.write(s, packetBytes, 0, packetBytes.length);
+				SocketUtil.write(s, packetBytes, 0, packetBytes.length);
 				logger.debug("sended, try to recv ... ");
-				byte[] recvBytes = ClientSocket.readBytes(s, 10);
+				byte[] recvBytes = SocketUtil.readBytes(s, 10);
 				logger.debug("recv {}", new String(recvBytes));
 			}
-			ClientSocket.close(s);
+			SocketUtil.close(s);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

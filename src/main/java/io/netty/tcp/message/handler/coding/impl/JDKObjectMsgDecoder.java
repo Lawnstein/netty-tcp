@@ -1,9 +1,10 @@
 /**
- * netty-tcp.
- * Copyright (C) 1999-2017, All rights reserved.
- *
- * This program and the accompanying materials are under the terms of the Apache License Version 2.0.
+ * netty-tcp. <br>
+ * Copyright (C) 1999-2017, All rights reserved. <br>
+ * <br>
+ * This program and the accompanying materials are under the terms of the Apache License Version 2.0. <br>
  */
+
 package io.netty.tcp.message.handler.coding.impl;
 
 import org.slf4j.Logger;
@@ -41,9 +42,7 @@ public class JDKObjectMsgDecoder extends AbstractFixedLengthHeaderByteMsgDecoder
 
 	@Override
 	public String toString() {
-		return "JDKObjectMsgDecoder [headLengthType=" + headLengthType + ", headerLengthSize=" + headerLengthSize
-				+ ", headerLengthIncluded=" + headerLengthIncluded + ", lengthHeaderIncluded=" + lengthHeaderIncluded
-				+ "]";
+		return "JDKObjectMsgDecoder [headLengthType=" + headLengthType + ", headerLengthSize=" + headerLengthSize + ", headerLengthIncluded=" + headerLengthIncluded + ", lengthHeaderIncluded=" + lengthHeaderIncluded + "]";
 	}
 
 }

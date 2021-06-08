@@ -1,9 +1,10 @@
 /**
- * netty-tcp.
- * Copyright (C) 1999-2017, All rights reserved.
- *
- * This program and the accompanying materials are under the terms of the Apache License Version 2.0.
+ * netty-tcp. <br>
+ * Copyright (C) 1999-2017, All rights reserved. <br>
+ * <br>
+ * This program and the accompanying materials are under the terms of the Apache License Version 2.0. <br>
  */
+
 package io.netty.tcp.client;
 
 import java.util.ArrayList;
@@ -67,18 +68,18 @@ public class NTcpClient extends AbstractClient {
 		else
 			this.writeTimeout = writeTimeout;
 	}
-	
+
 	public void setTimeout(int timeout) {
 		super.setTimeout(timeout);
 		if (this.writeTimeout <= 0)
 			setWriteTimeout(timeout);
 	}
-	
+
 	public void setHeartbeatInervalSec(int heartbeatInervalSec) {
 		this.heartbeatInervalSec = heartbeatInervalSec;
 		this.writeTimeout = -1;
 	}
-	
+
 	public NTcpClient(String host, int port) {
 		this.host = host;
 		this.port = port;
@@ -120,20 +121,15 @@ public class NTcpClient extends AbstractClient {
 
 	@Override
 	public String toString() {
-		return "NTcpClient [messageDecoder=" + messageDecoder + ", messageEncoder=" + messageEncoder
-				+ ", clientHandler=" + clientHandler + ", workerGroup=" + workerGroup + ", responses=" + responses
-				+ ", threadNumb=" + threadNumb + ", host=" + host + ", port=" + port + ", readTimeout=" + readTimeout
-				+ ", writeTimeout=" + writeTimeout + ", connectTimeout=" + connectTimeout + ", heartbeatInervalSec="
-				+ heartbeatInervalSec + ", timeout=" + timeout + ", alived=" + alived + "]";
+		return "NTcpClient [messageDecoder=" + messageDecoder + ", messageEncoder=" + messageEncoder + ", clientHandler=" + clientHandler + ", workerGroup=" + workerGroup + ", responses=" + responses + ", threadNumb=" + threadNumb + ", host=" + host + ", port=" + port + ", readTimeout=" + readTimeout + ", writeTimeout=" + writeTimeout + ", connectTimeout=" + connectTimeout + ", heartbeatInervalSec=" + heartbeatInervalSec + ", timeout=" + timeout + ", alived=" + alived + "]";
 	}
 
 	private NTcpClient getThis() {
 		return this;
 	}
-	
+
 	/**
 	 * 连接.
-	 * 
 	 */
 	public void connect() {
 		if (alived) {
@@ -141,7 +137,7 @@ public class NTcpClient extends AbstractClient {
 				logger.trace("Connection to server {}:{} is alived.", host, port);
 			return;
 		}
-		
+
 		try {
 			if (workerGroup != null) {
 				workerGroup.shutdownGracefully();
@@ -159,28 +155,25 @@ public class NTcpClient extends AbstractClient {
 					workerGroup = new NioEventLoopGroup(threadNumb);
 				else
 					workerGroup = new NioEventLoopGroup();
-				
+
 				Bootstrap b = new Bootstrap();
 				b.group(workerGroup);
-				b.channel(NioSocketChannel.class)
-				.option(ChannelOption.SO_REUSEADDR, true)
-				.option(ChannelOption.SO_KEEPALIVE, true)
-				.option(ChannelOption.TCP_NODELAY, true)
-				.option(ChannelOption.ALLOW_HALF_CLOSURE, true)
-				.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+				b.channel(NioSocketChannel.class).option(ChannelOption.SO_REUSEADDR, true).option(ChannelOption.SO_KEEPALIVE, true)
+				        .option(ChannelOption.TCP_NODELAY, true).option(ChannelOption.ALLOW_HALF_CLOSURE, true)
+				        .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 				b.handler(new ChannelInitializer<SocketChannel>() {
 					@Override
 					public void initChannel(SocketChannel ch) throws Exception {
 						if (heartbeatInervalSec > 0) {
 							logger.trace("add HeartBeat Handler with heartbeatInervalSec {}", heartbeatInervalSec);
-			                ch.pipeline().addLast(new IdleStateHandler(0,heartbeatInervalSec, 0, TimeUnit.SECONDS)); 		
-					} else {
+							ch.pipeline().addLast(new IdleStateHandler(0, heartbeatInervalSec, 0, TimeUnit.SECONDS));
+						} else {
 							if (readTimeout > 0)
 								ch.pipeline().addLast(new ReadTimeoutHandler(readTimeout));
 							if (writeTimeout > 0)
 								ch.pipeline().addLast(new WriteTimeoutHandler(writeTimeout));
 						}
-						
+
 						ChannelInboundHandlerAdapter innerMessageDecoder = null;
 						ChannelOutboundHandlerAdapter innerMessageEncoder = null;
 						if (messageDecoder == null) {
@@ -197,17 +190,16 @@ public class NTcpClient extends AbstractClient {
 							ch.pipeline().addLast(innerMessageDecoder);
 						if (innerMessageEncoder != null)
 							ch.pipeline().addLast(innerMessageEncoder);
-						
+
 						ch.pipeline().addLast(new ClientPlatHandler(getThis()));
 					}
 				});
-				
 
 				ChannelFuture f = b.connect(host, port).sync();
 				int connTimeout = timeout > 0 ? timeout : connectTimeout;
 				if (logger.isTraceEnabled())
-					logger.trace("Connection request has sended to server {}:{}, wait for connection response, connTimeout {}, success ? {}", host, port,
-							connTimeout, f.isSuccess());
+					logger.trace("Connection request has sended to server {}:{}, wait for connection response, connTimeout {}, success ? {}", host, port, connTimeout, f
+					        .isSuccess());
 				if (f.isSuccess()) {
 					logger.debug("Connected channel {} ", f.channel());
 				}
@@ -215,15 +207,14 @@ public class NTcpClient extends AbstractClient {
 				alived = true;
 				if (logger.isTraceEnabled())
 					logger.trace("Connection to server {}:{} has created.", host, port);
-				
+
 			} catch (Throwable th) {
 				close();
-				throw new RuntimeException("Connection to server " + host + ":" + port + " failed.", th);			
+				throw new RuntimeException("Connection to server " + host + ":" + port + " failed.", th);
 			}
 
 		}
 	}
-
 
 	/**
 	 * 连接断开。
@@ -293,7 +284,7 @@ public class NTcpClient extends AbstractClient {
 
 	private class ClientPlatHandler extends ChannelInboundHandlerAdapter {
 		private NTcpClient owner;
-		
+
 		public ClientPlatHandler() {
 		}
 
@@ -305,32 +296,31 @@ public class NTcpClient extends AbstractClient {
 			return owner;
 		}
 
-
 		public void setOwner(NTcpClient owner) {
 			this.owner = owner;
 		}
 
-		@Override  
-	    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {  
-	        if (evt instanceof IdleStateEvent) {  
-        		//logger.info("{} IdleStateEvent trigged {}.", ctx, evt);
-        		
-	            IdleStateEvent e = (IdleStateEvent) evt;  
-	            switch (e.state()) {  
-	                case WRITER_IDLE:
-	                	if (owner.getHeartbeatInervalSec() > 0) {
-	                		logger.trace("Write Idle for {}s , send ping.", owner.getHeartbeatInervalSec());
-	                		owner.send(HeartBeatMessage.KEY_PING);
-	                	}
-	                   break;
+		@Override
+		public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+			if (evt instanceof IdleStateEvent) {
+				// logger.info("{} IdleStateEvent trigged {}.", ctx, evt);
 
-	                default:  
-	                    break;  
-	            }  
-	        }  
-	        ctx.fireUserEventTriggered(evt);
-	    } 
-		
+				IdleStateEvent e = (IdleStateEvent) evt;
+				switch (e.state()) {
+					case WRITER_IDLE:
+						if (owner.getHeartbeatInervalSec() > 0) {
+							logger.trace("Write Idle for {}s , send ping.", owner.getHeartbeatInervalSec());
+							owner.send(HeartBeatMessage.KEY_PING);
+						}
+						break;
+
+					default:
+						break;
+				}
+			}
+			ctx.fireUserEventTriggered(evt);
+		}
+
 		@Override
 		public void channelActive(ChannelHandlerContext ctx) throws Exception {
 			if (logger.isTraceEnabled())
@@ -361,8 +351,7 @@ public class NTcpClient extends AbstractClient {
 		@Override
 		public void channelRead(ChannelHandlerContext ctx, Object response) throws Exception {
 			if (logger.isTraceEnabled())
-				logger.trace("{} Read from Channel {} with message ({}) {}", this, ctx.channel(),
-						(response == null ? "null" : response.getClass()), response);
+				logger.trace("{} Read from Channel {} with message ({}) {}", this, ctx.channel(), (response == null ? "null" : response.getClass()), response);
 
 			if (clientHandler != null) {
 				clientHandler.recvResponse(response);
@@ -380,24 +369,23 @@ public class NTcpClient extends AbstractClient {
 
 		@Override
 		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-			ctx.fireExceptionCaught(cause);			
+			ctx.fireExceptionCaught(cause);
 			if (clientHandler != null) {
 				clientHandler.onChannelException(ctx.channel(), cause);
 			}
 			if (cause != null) {
-				if ((cause instanceof ReadTimeoutException)
-					|| (cause instanceof WriteTimeoutException)) {
+				if ((cause instanceof ReadTimeoutException) || (cause instanceof WriteTimeoutException)) {
 					if (logger.isTraceEnabled())
-					logger.trace("{} client channel exceptionCaught : {}", this, ExceptionUtil.getStackTrace(cause));		
+						logger.trace("{} client channel exceptionCaught : {}", this, ExceptionUtil.getStackTrace(cause));
 				} else {
 					ctx.close();
 					disconnect();
 					logger.error("{} close the context {} for the causedException {}", this, cause);
 				}
-			} else {					
-				logger.warn("{} client channel exceptionCaught : {}", this, cause);				
+			} else {
+				logger.warn("{} client channel exceptionCaught : {}", this, cause);
 			}
-			
+
 		}
 
 	}

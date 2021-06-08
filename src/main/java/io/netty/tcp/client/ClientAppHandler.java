@@ -1,9 +1,10 @@
 /**
- * netty-tcp.
- * Copyright (C) 1999-2017, All rights reserved.
- *
- * This program and the accompanying materials are under the terms of the Apache License Version 2.0.
+ * netty-tcp. <br>
+ * Copyright (C) 1999-2017, All rights reserved. <br>
+ * <br>
+ * This program and the accompanying materials are under the terms of the Apache License Version 2.0. <br>
  */
+
 package io.netty.tcp.client;
 
 import io.netty.channel.Channel;
@@ -48,8 +49,7 @@ public interface ClientAppHandler {
 	/**
 	 * 连接通道关闭时应用处理.
 	 * 
-	 * @param channel
-	 *            通讯句柄
+	 * @param channel 通讯句柄
 	 */
 	public void onChannelClosed(Channel channel);
 
@@ -57,15 +57,14 @@ public interface ClientAppHandler {
 	 * 连接通道发生异常时应用的处理.<br>
 	 * 平台层会直接中断连接。<br>
 	 * 
-	 * @param channel
-	 *            通讯句柄
-	 * @param cause
-	 *            异常
+	 * @param channel 通讯句柄
+	 * @param cause 异常
 	 */
 	public void onChannelException(Channel channel, Throwable cause);
-	
+
 	/**
 	 * 设置创建者(通讯时会从creator获取一些超时等通讯信息).
+	 * 
 	 * @param creator
 	 */
 	public void setCreator(NTcpClient creator);
