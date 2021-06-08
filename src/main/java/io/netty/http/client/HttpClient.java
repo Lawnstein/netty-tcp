@@ -11,8 +11,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -99,6 +101,11 @@ public class HttpClient {
 			}
 		}
 		if (paramUrl != null && paramUrl.length() > 0) {
+			try {
+				paramUrl = URLEncoder.encode(paramUrl, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException("URLEncoding the paramUrl with UTF-8 failed, " + e.getMessage(), e);
+			}
 			httpUrl += "?" + paramUrl;
 		}
 
